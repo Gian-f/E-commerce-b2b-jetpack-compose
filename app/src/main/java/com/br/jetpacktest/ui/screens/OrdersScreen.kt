@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material3.CardDefaults.elevatedShape
@@ -108,110 +109,107 @@ fun OrdersScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                 }
+                val filteredItems = items.filter { item ->
+                    (chipStateInProgress.value && item.status == "Pendente") ||
+                            (chipStateDelivered.value && item.status == "Entregue") ||
+                            (chipStateCancelled.value && item.status == "Cancelado")
+                }
                 LazyColumn {
-                    item {
-                        val filteredItems = items.filter { item ->
-                            (chipStateInProgress.value && item.status == "Pendente") ||
-                                    (chipStateDelivered.value && item.status == "Entregue") ||
-                                    (chipStateCancelled.value && item.status == "Cancelado")
-                        }
-                        filteredItems.forEach {
-                            filteredItems.stream().forEachOrdered {  }
-                            ElevatedCard(
+                    items(filteredItems) {
+                        ElevatedCard(
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxWidth()
+                                .height(170.dp),
+                            shape = elevatedShape
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier
-                                    .padding(12.dp)
                                     .fillMaxWidth()
-                                    .height(170.dp),
-                                shape = elevatedShape
+                                    .padding(top = 16.dp)
                             ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                Text(
+                                    text = "Pedido #" + it.orderId.toString(),
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
+
+                                Text(
+                                    text = it.requestedAt,
+                                    modifier = Modifier.padding(end = 12.dp)
+                                )
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp)
+                            ) {
+                                Text(
+                                    text = "Número de rastreio: ",
+                                    fontFamily = FontFamily.SansSerif,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
+
+                                Text(
+                                    text = it.trackingNumber,
+                                    color = Color.Black,
+                                    modifier = Modifier.padding(end = 12.dp)
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp)
+                            ) {
+                                Text(
+                                    text = "Subtotal: ",
+                                    fontFamily = FontFamily.SansSerif,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
+
+                                Text(
+                                    text = it.total,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.SansSerif,
+                                    modifier = Modifier.padding(end = 12.dp)
+                                )
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp, bottom = 8.dp)
+                            ) {
+                                Text(
+                                    text = it.status.uppercase(Locale.ROOT),
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontSize = TextUnit(14F, TextUnitType.Sp),
+                                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
+                                    color =
+                                    if (it.status.contains("Pendente")) Color(0xFFCF6212)
+                                    else if (it.status.contains("Cancelado")) Color(0xFFC50000)
+                                    else Color(0xFF009254)
+                                )
+
+                                OutlinedButton(
+                                    onClick = { /*TODO*/ },
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp)
+                                        .width(140.dp)
+                                        .height(80.dp)
+                                        .padding(end = 12.dp),
                                 ) {
                                     Text(
-                                        text = "Pedido #" + it.orderId.toString(),
-                                        fontFamily = FontFamily.Monospace,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Start,
-                                        modifier = Modifier.padding(start = 12.dp)
-                                    )
-
-                                    Text(
-                                        text = it.requestedAt,
-                                        modifier = Modifier.padding(end = 12.dp)
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp)
-                                ) {
-                                    Text(
-                                        text = "Número de rastreio: ",
-                                        fontFamily = FontFamily.SansSerif,
-                                        modifier = Modifier.padding(start = 12.dp)
-                                    )
-
-                                    Text(
-                                        text = it.trackingNumber,
+                                        text = "Detalhes",
                                         color = Color.Black,
-                                        modifier = Modifier.padding(end = 12.dp)
+                                        textAlign = TextAlign.Center
                                     )
-                                }
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp)
-                                ) {
-                                    Text(
-                                        text = "Subtotal: ",
-                                        fontFamily = FontFamily.SansSerif,
-                                        modifier = Modifier.padding(start = 12.dp)
-                                    )
-
-                                    Text(
-                                        text = it.total,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = FontFamily.SansSerif,
-                                        modifier = Modifier.padding(end = 12.dp)
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 8.dp)
-                                ) {
-                                    Text(
-                                        text = it.status.uppercase(Locale.ROOT),
-                                        fontFamily = FontFamily.SansSerif,
-                                        fontSize = TextUnit(14F, TextUnitType.Sp),
-                                        modifier = Modifier.padding(start = 12.dp, top = 8.dp),
-                                        color =
-                                        if (it.status.contains("Pendente")) Color(0xFFCF6212)
-                                        else if (it.status.contains("Cancelado")) Color(0xFFC50000)
-                                        else Color(0xFF009254)
-                                    )
-
-                                    OutlinedButton(
-                                        onClick = { /*TODO*/ },
-                                        modifier = Modifier
-                                            .width(140.dp)
-                                            .height(80.dp)
-                                            .padding(end = 12.dp),
-                                    ) {
-                                        Text(
-                                            text = "Detalhes",
-                                            color = Color.Black,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
                                 }
                             }
                         }

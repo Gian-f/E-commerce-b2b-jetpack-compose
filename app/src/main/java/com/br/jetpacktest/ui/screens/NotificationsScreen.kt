@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
@@ -26,11 +25,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.compose.ui.util.fastForEach
 import androidx.navigation.NavHostController
+import com.br.jetpacktest.R
 import com.br.jetpacktest.data.dummy.NotificationsData
 import com.br.jetpacktest.ui.components.ConfirmDialog
 import com.br.jetpacktest.ui.routes.Screen
@@ -52,14 +53,14 @@ fun NotificationsScreen(navController: NavHostController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
+                            painter = painterResource(id = R.drawable.ic_back_ios),
                             contentDescription = "Go back"
                         )
                     }
                 },
                 actions = {
                     if (notifications.isNotEmpty()) {
-                        notifications.fastDistinctBy {  }
+                        notifications.fastDistinctBy { }
                         IconButton(
                             onClick = {
                                 openDialog.value = true
@@ -88,8 +89,7 @@ fun NotificationsScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val list = notifications
-                items(count = list.size) { index ->
+                items(count = notifications.size) { index ->
 
                     Column(modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp)) {
                         Text(

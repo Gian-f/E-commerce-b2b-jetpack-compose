@@ -1,25 +1,25 @@
 package com.br.jetpacktest.data.dummy
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Toc
+
+import com.br.jetpacktest.R
 import com.br.jetpacktest.domain.model.Banner
 
 object BannersDummyData {
     val banners = listOf(
         Banner(
-            image = Icons.Filled.Toc,
+            image = R.drawable.banner_1,
         ),
         Banner(
-            image = Icons.Filled.Toc,
+            image = R.drawable.banner_2,
         ),
         Banner(
-            image = Icons.Filled.Toc,
+            image = R.drawable.banner_3,
         ),
         Banner(
-            image = Icons.Filled.Toc,
+            image = R.drawable.banner_1,
         ),
         Banner(
-            image = Icons.Filled.Toc,
+            image = R.drawable.banner_2,
         ),
     )
 }

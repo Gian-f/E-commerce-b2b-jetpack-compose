@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -78,7 +80,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -112,7 +116,7 @@ fun HomeScreen(navController: NavHostController, themeViewModel: ThemeViewModel)
 
 @Composable
 private fun HomeContent(navController: NavHostController, themeViewModel: ThemeViewModel) {
-    val items = NavigationDrawerData.items
+    val navigationItems = NavigationDrawerData.items
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
@@ -124,38 +128,40 @@ private fun HomeContent(navController: NavHostController, themeViewModel: ThemeV
                 LazyColumn {
                     item {
                         DrawerHeader(openDialog)
-                        items.forEachIndexed { index, item ->
-                            NavigationDrawerItem(modifier = Modifier.padding(
-                                NavigationDrawerItemDefaults.ItemPadding
-                            ),
-                                label = { Text(text = item.title) },
-                                selected = index == selectedItemIndex,
-                                onClick = {
-                                    try {
-                                        navController.navigate(item.route)
-                                    } catch (e: Exception) {
-                                        Log.d("Navigation Exception", e.toString())
-                                    }
-                                    selectedItemIndex = index
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                },
-                                icon = {
-                                    Icon(
-                                        imageVector = if (index == selectedItemIndex) {
-                                            item.selectedIcon
-                                        } else {
-                                            item.unselectedIcon
-                                        }, contentDescription = item.title
-                                    )
-                                },
-                                badge = {
-                                    item.badgeCount?.let {
-                                        Text(text = item.badgeCount.toString())
-                                    }
-                                })
-                        }
+                    }
+                    itemsIndexed(navigationItems) { index, item ->
+                        NavigationDrawerItem(modifier = Modifier.padding(
+                            NavigationDrawerItemDefaults.ItemPadding
+                        ),
+                            label = { Text(text = item.title) },
+                            selected = index == selectedItemIndex,
+                            onClick = {
+                                try {
+                                    navController.navigate(item.route)
+                                } catch (e: Exception) {
+                                    Log.d("Navigation Exception", e.toString())
+                                }
+                                selectedItemIndex = index
+                                scope.launch {
+                                    drawerState.close()
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = if (index == selectedItemIndex) {
+                                        item.selectedIcon
+                                    } else {
+                                        item.unselectedIcon
+                                    }, contentDescription = item.title
+                                )
+                            },
+                            badge = {
+                                item.badgeCount?.let {
+                                    Text(text = item.badgeCount.toString())
+                                }
+                            })
+                    }
+                    item {
                         Spacer(modifier = Modifier.height(8.dp))
                         SegmentedButton(
                             items = listOf("Dia", "Noite"),
@@ -407,7 +413,7 @@ private fun PageContent(
                             .fillMaxWidth()
                             .padding(bottom = 16.dp)
                     ) {
-                        items(categories) { categories ->
+                        items(categories, key = { it.label }) { categories ->
                             CategoriesButton(
                                 label = categories.label,
                                 icon = categories.icon,
@@ -425,15 +431,26 @@ private fun PageContent(
                     }
                     HorizontalPager(
                         state = bannerPager,
-                    ) {
+                    ) { index ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(180.dp)
-                                .padding(start = 22.dp, end = 22.dp),
+                                .padding(start = 22.dp, end = 22.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { },
                             elevation = CardDefaults.cardElevation(3.dp),
                             shape = RoundedCornerShape(10.dp)
-                        ) {}
+                        ) {
+                            val url = banners[index].image
+                            val imagePainter = painterResource(url)
+
+                            Image(
+                                painter = imagePainter,
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                            )
+                        }
                     }
                     PagerIndicator(bannerPager)
                     Row(
@@ -463,18 +480,26 @@ private fun PageContent(
                         LazyRow(
                             contentPadding = PaddingValues(end = 64.dp),
                         ) {
-                            items(products) { product ->
+                            items(products,
+                                key = { item -> item.id }) { product ->
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.padding(horizontal = 4.dp)
                                 ) {
                                     Card(
                                         modifier = Modifier
-                                            .width(120.dp)
-                                            .height(150.dp),
+                                            .width(130.dp)
+                                            .height(140.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .clickable { },
                                         elevation = CardDefaults.cardElevation(3.dp),
                                     ) {
-                                        // Conteúdo do Card
+                                        val imagePainter = painterResource(product.image)
+                                        Image(
+                                            painter = imagePainter,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.FillBounds,
+                                        )
                                     }
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
@@ -521,7 +546,7 @@ private fun PageContent(
                             contentPadding = PaddingValues(end = 64.dp),
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
-                            items(products) { product ->
+                            items(products, key = { item -> item.id }) { product ->
                                 Row(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically,
@@ -533,7 +558,11 @@ private fun PageContent(
                                             .height(80.dp),
                                         elevation = CardDefaults.cardElevation(3.dp),
                                     ) {
-                                        // Conteúdo do Card
+                                        Image(
+                                            painter = painterResource(id = product.image),
+                                            contentScale = ContentScale.FillBounds,
+                                            contentDescription = null
+                                        )
                                     }
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column(

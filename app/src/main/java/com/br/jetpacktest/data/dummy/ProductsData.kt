@@ -2,39 +2,46 @@ package com.br.jetpacktest.data.dummy
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.ImageNotSupported
+import com.br.jetpacktest.R
 import com.br.jetpacktest.domain.model.Products
 import com.br.jetpacktest.util.FormatCurrency
 
 object ProductsData {
     val products = listOf(
         Products(
-            description = "Produto 1",
-            image = Icons.Sharp.ImageNotSupported,
-            price = FormatCurrency(10.00),
+            id = 1,
+            description = "Óculos",
+            image = R.drawable.oculos_2,
+            price = FormatCurrency(500.00),
         ),
         Products(
-            description = "Produto 2",
-            image = Icons.Sharp.ImageNotSupported,
+            id = 2,
+            description = "Óculos",
+            image = R.drawable.oculos_1,
             price = FormatCurrency(80.00),
         ),
         Products(
-            description = "Produto 3",
-            image = Icons.Sharp.ImageNotSupported,
-            price = FormatCurrency(120.00),
+            id = 3,
+            description = "Óculos",
+            image = R.drawable.oculos_2,
+            price = FormatCurrency(80.00),
         ),
         Products(
-            description = "Produto 4",
-            image = Icons.Sharp.ImageNotSupported,
-            price = FormatCurrency(15.00),
+            id = 4,
+            description = "Relógio",
+            image = R.drawable.relogio_1,
+            price = FormatCurrency(300.00),
         ),
         Products(
-            description = "Produto 5",
-            image = Icons.Sharp.ImageNotSupported,
-            price = FormatCurrency(100.00),
+            id = 5,
+            description = "Câmera",
+            image = R.drawable.camera_1,
+            price = FormatCurrency(1000.00),
         ),
         Products(
-            description = "Produto 6",
-            image = Icons.Sharp.ImageNotSupported,
+            id = 6,
+            description = "Fone",
+            image = R.drawable.fone_1,
             price = FormatCurrency(200.00),
         )
     )

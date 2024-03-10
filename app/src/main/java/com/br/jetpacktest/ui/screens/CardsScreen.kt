@@ -15,9 +15,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCard
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -26,22 +23,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.br.jetpacktest.R
 import com.br.jetpacktest.data.dummy.CardsData.cards
 import com.br.jetpacktest.ui.components.CreditCard
 import com.br.jetpacktest.ui.routes.Screen
@@ -61,7 +58,7 @@ fun CardsScreen(navController: NavHostController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
+                            painter = painterResource(id = R.drawable.ic_back_ios),
                             contentDescription = "Go back"
                         )
                     }
@@ -76,7 +73,7 @@ fun CardsScreen(navController: NavHostController) {
                         .padding(paddingValues)
                         .fillMaxWidth(),
                     Arrangement.Center,
-                    Alignment.CenterVertically
+                    CenterVertically
                 ) {
                     Text(text = "Gerenciamento de cartões")
                     Spacer(modifier = Modifier.width(40.dp))
@@ -113,7 +110,10 @@ fun CardsScreen(navController: NavHostController) {
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(16.dp),
                     onClick = { /*TODO*/ }) {
-                    Icon(imageVector = Icons.Filled.AddCard, contentDescription = "fab")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add_card_24),
+                        contentDescription = "fab"
+                    )
                 }
             }
         }
@@ -171,7 +171,7 @@ fun CardDetails() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = CenterVertically
                 ) {
                     OutlinedTextField(
                         value = viewModel.expiryDate.text,
