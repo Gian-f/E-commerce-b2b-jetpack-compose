@@ -67,7 +67,8 @@ fun LoginScreen(
     context.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     val login by viewModel.username.collectAsStateWithLifecycle("")
     val password by viewModel.password.collectAsStateWithLifecycle("")
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isLoginLoading by viewModel.isLoginLoading.collectAsStateWithLifecycle()
+    val isRegisterLoading by viewModel.isLoginLoading.collectAsStateWithLifecycle()
     val loginErrorMessage by viewModel.loginError.collectAsStateWithLifecycle()
     val loginErrorState = remember { mutableStateOf(false) }
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
@@ -155,18 +156,24 @@ fun LoginScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            ButtonComponent("Entrar", isLoading = isLoading) {
-                viewModel.authenticateUser(
-                    onSuccess = {
-                        navController.navigate(Screen.Products.route)
-                    },
-                    onFailure = {
-                        loginErrorState.value = true
-                    },
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                ButtonComponent("Entrar", isLoading = isLoginLoading) {
+                    viewModel.authenticateUser(
+                        onSuccess = {
+                            navController.navigate(Screen.Products.route)
+                        },
+                        onFailure = {
+                            loginErrorState.value = true
+                        },
+                    )
+                }
+                ButtonComponent("Registre-se?", isLoading = isRegisterLoading) {
+                    navController.navigate(Screen.Register.route)
+                }
             }
+
             if (loginErrorState.value) {
                 ShowErrorSheet(
                     message = loginErrorMessage.toString(),

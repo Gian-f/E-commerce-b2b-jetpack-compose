@@ -21,8 +21,11 @@ class LoginViewModel @Inject constructor(
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _isLoginLoading = MutableStateFlow(false)
+    val isLoginLoading: StateFlow<Boolean> = _isLoginLoading
+
+    private val _isRegisterLoading = MutableStateFlow(false)
+    val isRegisterLoading: StateFlow<Boolean> = _isRegisterLoading
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
@@ -40,7 +43,7 @@ class LoginViewModel @Inject constructor(
         onFailure: () -> Unit,
     ) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isLoginLoading.value = true
             runCatching {
                 authRepository.authenticate(LoginRequest(username.value, password.value))
             }.onSuccess { loginResponse ->
@@ -58,7 +61,7 @@ class LoginViewModel @Inject constructor(
             }.onFailure {
                 onFailure.invoke()
             }
-            _isLoading.value = false
+            _isLoginLoading.value = false
         }
     }
 

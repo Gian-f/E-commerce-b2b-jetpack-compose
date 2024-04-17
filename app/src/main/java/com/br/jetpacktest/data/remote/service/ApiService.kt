@@ -8,7 +8,7 @@ import retrofit2.http.POST
 
 interface ApiService {
 
-    @POST("/v1/login")
+    @POST("v1/login")
     fun authenticate(@Body loginRequest: LoginRequest): Call<LoginResponse>
 
 
