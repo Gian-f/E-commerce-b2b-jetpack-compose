@@ -24,7 +24,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material.icons.outlined.ShoppingCart
 import com.br.jetpacktest.domain.model.NavigationDrawerItem
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 
 object NavigationDrawerData {
     val items = listOf(

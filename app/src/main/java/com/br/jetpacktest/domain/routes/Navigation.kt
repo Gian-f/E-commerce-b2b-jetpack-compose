@@ -1,29 +1,31 @@
-package com.br.jetpacktest.ui.routes
+package com.br.jetpacktest.domain.routes
 
+import LoginScreen
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.br.jetpacktest.ui.screens.CardsScreen
 import com.br.jetpacktest.ui.screens.HomeScreen
-import com.br.jetpacktest.ui.screens.LoginScreen
 import com.br.jetpacktest.ui.screens.NotificationsScreen
 import com.br.jetpacktest.ui.screens.OrdersScreen
 import com.br.jetpacktest.ui.screens.ProfileScreen
 import com.br.jetpacktest.ui.screens.SettingsScreen
+import com.br.jetpacktest.ui.viewmodel.LoginViewModel
 import com.br.jetpacktest.ui.viewmodel.ThemeViewModel
 
 
 @Composable
-fun Navigation(themeViewModel: ThemeViewModel = viewModel()) {
-    val navController = rememberNavController()
+fun Navigation(navController: NavHostController) {
+    val themeViewModel = hiltViewModel<ThemeViewModel>()
+    val loginViewModel = hiltViewModel<LoginViewModel>()
     NavHost(
         navController = navController,
         startDestination = Screen.Login.route
     ) {
         composable(Screen.Login.route) {
-            LoginScreen(navController)
+            LoginScreen(navController, loginViewModel)
         }
         composable(Screen.Products.route) {
             HomeScreen(navController, themeViewModel)

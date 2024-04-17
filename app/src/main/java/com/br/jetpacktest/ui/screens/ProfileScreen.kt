@@ -48,7 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.br.jetpacktest.R
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

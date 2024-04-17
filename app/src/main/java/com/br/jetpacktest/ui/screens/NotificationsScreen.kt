@@ -34,7 +34,7 @@ import androidx.navigation.NavHostController
 import com.br.jetpacktest.R
 import com.br.jetpacktest.data.dummy.NotificationsData
 import com.br.jetpacktest.ui.components.ConfirmDialog
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 import com.br.jetpacktest.util.formatDateAgo
 import java.util.Date
 

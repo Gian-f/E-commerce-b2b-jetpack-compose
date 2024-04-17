@@ -41,8 +41,8 @@ import androidx.navigation.NavHostController
 import com.br.jetpacktest.R
 import com.br.jetpacktest.data.dummy.CardsData.cards
 import com.br.jetpacktest.ui.components.CreditCard
-import com.br.jetpacktest.ui.routes.Screen
-import com.br.jetpacktest.ui.viewmodel.CardDetailsViewModel
+import com.br.jetpacktest.domain.routes.Screen
+import com.br.jetpacktest.ui.viewmodel.CardViewModel
 import com.br.jetpacktest.util.CardNumberFilter
 import com.br.jetpacktest.util.formattedDate
 
@@ -124,7 +124,7 @@ fun CardsScreen(navController: NavHostController) {
 @Composable
 fun CardDetails() {
 
-    val viewModel = remember { CardDetailsViewModel() }
+    val viewModel = remember { CardViewModel() }
 
     Column(modifier = Modifier.fillMaxSize()) {
 

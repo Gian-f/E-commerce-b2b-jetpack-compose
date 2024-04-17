@@ -102,7 +102,7 @@ import com.br.jetpacktest.ui.components.FilterButton
 import com.br.jetpacktest.ui.components.HistoryItem
 import com.br.jetpacktest.ui.components.PagerIndicator
 import com.br.jetpacktest.ui.components.SegmentedButton
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 import com.br.jetpacktest.ui.viewmodel.ThemeViewModel
 import com.br.jetpacktest.util.ComposeTheme
 import com.br.jetpacktest.util.VoiceToTextParser

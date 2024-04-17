@@ -43,7 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 
 
 @OptIn(ExperimentalMaterial3Api::class)

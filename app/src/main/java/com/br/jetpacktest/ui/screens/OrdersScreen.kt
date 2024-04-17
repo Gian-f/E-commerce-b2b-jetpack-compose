@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.br.jetpacktest.data.dummy.OrderData
 import com.br.jetpacktest.ui.components.ElevatedFilterChip
-import com.br.jetpacktest.ui.routes.Screen
+import com.br.jetpacktest.domain.routes.Screen
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
