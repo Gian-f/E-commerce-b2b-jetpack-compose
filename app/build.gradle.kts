@@ -66,9 +66,12 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13")
-    implementation(platform("androidx.compose:compose-bom:2023.05.01"))
+    implementation(platform("androidx.compose:compose-bom:2024.04.00"))
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.airbnb.android:lottie-compose:6.0.1")
+
+    // system UI Controller
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.28.0")
 
     //Lifecycle
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
@@ -88,7 +91,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
