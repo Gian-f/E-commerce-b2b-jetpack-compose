@@ -3,7 +3,9 @@ package com.br.b2b.data.dummy
 import com.br.b2b.domain.model.Products
 import com.br.b2b.util.FormatCurrency
 import com.br.jetpacktest.R
+import javax.annotation.concurrent.Immutable
 
+@Immutable
 object ProductsData {
     val products = listOf(
         Products(

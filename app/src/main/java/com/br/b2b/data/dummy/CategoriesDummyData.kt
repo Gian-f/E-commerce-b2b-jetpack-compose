@@ -7,7 +7,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.NoteAlt
 import com.br.b2b.domain.model.Categories
+import javax.annotation.concurrent.Immutable
 
+@Immutable
 object CategoriesDummyData {
     val categories = listOf(
         Categories(

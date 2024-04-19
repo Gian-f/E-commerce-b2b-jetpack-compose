@@ -382,7 +382,7 @@ fun CategoriesButton(
                 isClicked = !isClicked
                 onClick()
             }
-            .padding(all = 11.dp)
+            .padding(vertical = 11.dp, horizontal = 10.dp)
         ) {
             Icon(
                 imageVector = icon,
@@ -391,7 +391,7 @@ fun CategoriesButton(
                 modifier = Modifier
                     .background(
                         MaterialTheme.colorScheme.inversePrimary,
-                        RoundedCornerShape(30.dp)
+                        RoundedCornerShape(15.dp)
                     )
                     .padding(12.dp)
             )

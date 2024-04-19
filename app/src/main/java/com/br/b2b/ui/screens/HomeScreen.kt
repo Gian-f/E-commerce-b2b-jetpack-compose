@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,9 +31,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -57,6 +60,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -86,11 +90,13 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.br.b2b.data.dummy.BannersDummyData.banners
 import com.br.b2b.data.dummy.CategoriesDummyData.categories
 import com.br.b2b.data.dummy.NavigationDrawerData
 import com.br.b2b.data.dummy.NotificationsData.items
 import com.br.b2b.data.dummy.ProductsData.products
+import com.br.b2b.domain.model.Products
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.BottomSheetModalFilter
 import com.br.b2b.ui.components.CategoriesButton
@@ -99,6 +105,7 @@ import com.br.b2b.ui.components.FilterButton
 import com.br.b2b.ui.components.HistoryItem
 import com.br.b2b.ui.components.PagerIndicator
 import com.br.b2b.ui.components.SegmentedButton
+import com.br.b2b.ui.theme.BgColor
 import com.br.b2b.ui.viewmodel.ThemeViewModel
 import com.br.b2b.util.ComposeTheme
 import com.br.b2b.util.VoiceToTextParser
@@ -232,6 +239,7 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>) {
                         containerColor = MaterialTheme.colorScheme.surface
                     ), onClick = { openDialog.value = true }) {
                         Icon(
+                            modifier = Modifier.size(24.dp),
                             painter = painterResource(id = R.drawable.ic_logout),
                             tint = MaterialTheme.colorScheme.primary,
                             contentDescription = "Logout"
@@ -294,9 +302,6 @@ private fun PageContent(
         topBar = {
             Column {
                 CenterAlignedTopAppBar(title = {
-                    Text(
-                        Screen.Products.title, maxLines = 1, overflow = TextOverflow.Ellipsis
-                    )
                 }, navigationIcon = {
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
                         Icon(
@@ -307,6 +312,12 @@ private fun PageContent(
                 }, actions = {
                     TopAppBarActions(navController)
                 })
+                Text(
+                    modifier = Modifier.padding(start = 16.dp, bottom = 12.dp),
+                    text = "Olá! Você está pronto para descobrir algo incrível hoje?",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = TextUnit(21F, TextUnitType.Sp)
+                )
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -399,22 +410,28 @@ private fun PageContent(
         },
         content = { contentPadding ->
             LazyColumn(
-                horizontalAlignment = Alignment.Start,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
             ) {
                 item {
+                    Text(
+                        modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+                        text = "Categorias",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = TextUnit(16F, TextUnitType.Sp)
+                    )
                     LazyRow(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 12.dp, top = 8.dp, start = 4.dp, end = 12.dp)
                     ) {
                         items(
                             items = categories,
                             key = { it.label },
-                            contentType = { it.label }) { categories ->
+                            contentType = { it.label }
+                        ) { categories ->
                             CategoriesButton(
                                 label = categories.label,
                                 icon = categories.icon,
@@ -427,26 +444,31 @@ private fun PageContent(
                                             duration = SnackbarDuration.Short
                                         )
                                     }
-                                })
+                                }
+                            )
                         }
                     }
+                }
+
+                item {
                     HorizontalPager(
+                        modifier = Modifier.padding(top = 16.dp),
                         state = bannerPager,
                     ) { index ->
+                        val url = banners[index].image
+                        val imagePainter = rememberAsyncImagePainter(url)
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
+                                .height(150.dp)
                                 .padding(start = 22.dp, end = 22.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(20.dp))
                                 .clickable { },
                             elevation = CardDefaults.cardElevation(3.dp),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            val url = banners[index].image
-                            val imagePainter = painterResource(url)
-
                             Image(
+                                modifier = Modifier.fillMaxSize(),
                                 painter = imagePainter,
                                 contentDescription = null,
                                 contentScale = ContentScale.FillBounds,
@@ -454,139 +476,45 @@ private fun PageContent(
                         }
                     }
                     PagerIndicator(bannerPager)
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Produtos em destaque",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = TextUnit(16F, TextUnitType.Sp)
-                        )
-                        Text(
-                            text = "Ver mais",
-                            fontWeight = FontWeight.W400,
-                            fontSize = TextUnit(13F, TextUnitType.Sp),
-                            color = Color(0xFF9B9B9B)
-                        )
-                    }
+                }
 
+                item {
+                    SectionTitle(title = "Produtos em destaque", modifier = Modifier.padding(16.dp))
                     LazyRow(
                         contentPadding = PaddingValues(end = 64.dp),
                     ) {
                         items(
                             items = products,
                             key = { item -> item.id },
-                            contentType = { item -> item.id }
-                        ) { product ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .width(130.dp)
-                                        .height(140.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .clickable { },
-                                    elevation = CardDefaults.cardElevation(3.dp),
-                                ) {
-                                    val imagePainter = painterResource(product.image)
-                                    Image(
-                                        painter = imagePainter,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.FillBounds,
-                                    )
+                            contentType = { item -> item.id }) { product ->
+                            ProductItem(
+                                product = product,
+                                onFavoriteClicked = {
+
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = product.description,
-                                    textAlign = TextAlign.Start,
-                                    fontSize = TextUnit(13F, TextUnitType.Sp)
-                                )
-                                Spacer(modifier = Modifier.height(3.dp))
-                                Text(
-                                    text = product.price,
-                                    fontSize = TextUnit(11F, TextUnitType.Sp),
-                                    textAlign = TextAlign.Start
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
+                            )
                         }
                     }
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+                }
+
+                item {
+                    SectionTitle(
+                        title = "Produtos Recomendados",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(end = 64.dp),
                     ) {
-                        Text(
-                            text = "Produtos Recomendados",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = TextUnit(16F, TextUnitType.Sp)
-                        )
-                        Text(
-                            text = "Ver mais",
-                            fontWeight = FontWeight.W400,
-                            fontSize = TextUnit(13F, TextUnitType.Sp),
-                            color = Color(0xFF9B9B9B)
-                        )
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        LazyRow(
-                            contentPadding = PaddingValues(end = 64.dp),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        ) {
-                            items(
-                                products,
-                                key = { item -> item.id },
-                                contentType = { item -> item.id }) { product ->
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                ) {
-                                    Card(
-                                        modifier = Modifier
-                                            .width(80.dp)
-                                            .height(80.dp),
-                                        elevation = CardDefaults.cardElevation(3.dp),
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = product.image),
-                                            contentScale = ContentScale.FillBounds,
-                                            contentDescription = null
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier.fillMaxHeight()
-                                    ) {
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Text(
-                                            text = product.description,
-                                            textAlign = TextAlign.Start,
-                                            fontSize = TextUnit(13F, TextUnitType.Sp)
-                                        )
-                                        Spacer(modifier = Modifier.height(3.dp))
-                                        Text(
-                                            text = product.price,
-                                            fontSize = TextUnit(11F, TextUnitType.Sp),
-                                            textAlign = TextAlign.Start
-                                        )
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                    }
+                        items(
+                            items = products,
+                            key = { item -> item.id },
+                            contentType = { item -> item.id }) { product ->
+                            ProductItem(
+                                product = product,
+                                onFavoriteClicked = {
+
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -599,16 +527,108 @@ private fun PageContent(
 
 @Composable
 private fun TopAppBarActions(navController: NavHostController) {
-    BadgedBox(badge = {
-        if (items.isNotEmpty()) {
-            Badge()
+    BadgedBox(
+        badge = {
+            if (items.isNotEmpty()) {
+                Badge()
+            }
+        }) {
+
+    }
+    Row {
+        IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_notifications),
+                modifier = Modifier.size(24.dp),
+                contentDescription = "Notifications"
+            )
         }
-    }) {}
-    IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
-        Icon(
-            modifier = Modifier.size(24.dp),
-            painter = painterResource(id = R.drawable.ic_notifications),
-            contentDescription = "Notifications"
+        IconButton(onClick = {  }) {
+            Icon(
+                imageVector = Icons.Outlined.ShoppingCart,
+                modifier = Modifier.size(24.dp),
+                contentDescription = "Notifications"
+            )
+        }
+    }
+}
+
+
+@Composable
+fun SectionTitle(title: String, modifier: Modifier = Modifier) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = TextUnit(16F, TextUnitType.Sp)
         )
+        Text(
+            text = "Ver mais",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = TextUnit(13F, TextUnitType.Sp),
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+fun ProductItem(product: Products, onFavoriteClicked: () -> Unit) {
+    val imagePainter = rememberAsyncImagePainter(product.image)
+    Card(
+        modifier = Modifier
+            .width(180.dp)
+            .height(230.dp)
+            .padding(12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { },
+        elevation = CardDefaults.cardElevation(16.dp),
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.weight(1f)) {
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = imagePainter,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                )
+                IconButton(
+                    onClick = onFavoriteClicked,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = if (product.isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = "Favoritar produto",
+                        tint = Color.Red
+                    )
+                }
+            }
+            Surface(
+                color = BgColor,
+                modifier = Modifier
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = product.description,
+                        textAlign = TextAlign.Start,
+                        fontSize = TextUnit(11F, TextUnitType.Sp),
+                        fontWeight = FontWeight.W400
+                    )
+                    Text(
+                        text = product.price,
+                        textAlign = TextAlign.Start,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = TextUnit(13F, TextUnitType.Sp)
+                    )
+                }
+            }
+        }
     }
 }
