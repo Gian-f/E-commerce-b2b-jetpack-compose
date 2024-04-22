@@ -29,9 +29,10 @@
     public static *** checkParameterIsNotNull(...);
 }
 
-# Remover classes e métodos não utilizados
--dontshrink
--dontoptimize
+-keep class com.br.b2b.data.** { *; }
+
+-keep class com.br.b2b.domain.** { *; }
+
 
 # Remover referências não utilizadas
 -whyareyoukeeping class *

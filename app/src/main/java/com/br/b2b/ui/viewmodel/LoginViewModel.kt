@@ -6,9 +6,13 @@ import com.br.b2b.data.remote.dto.request.LoginRequest
 import com.br.b2b.domain.repository.AuthRepository
 import com.br.b2b.domain.repository.AuthRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,20 +45,19 @@ class LoginViewModel @Inject constructor(
         onFailure: () -> Unit,
     ) {
         _isLoginLoading.value = true
-        viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 authRepository.authenticate(LoginRequest(username.value, password.value))
             }.onSuccess { loginResponse ->
-                val response = loginResponse.getOrNull()
-                if (response != null && response.status) {
-                    clear()
-                    onSuccess.invoke()
-                } else {
-                    val error =
-                        loginResponse.exceptionOrNull()?.message
-                            ?: "E-mail ou senha inválidos!"
-                    _loginError.value = error
-                    onFailure.invoke()
+                withContext(Dispatchers.Main) {
+                    val response = loginResponse.getOrNull()
+                    if (response != null && response.status) {
+                        clear()
+                        onSuccess.invoke()
+                    } else {
+                        _loginError.value = response?.message ?: "E-mail ou senha inválidos!"
+                        onFailure.invoke()
+                    }
                 }
             }.onFailure {
                 onFailure.invoke()

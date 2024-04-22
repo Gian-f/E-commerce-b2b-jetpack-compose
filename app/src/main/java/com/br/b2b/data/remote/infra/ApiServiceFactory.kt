@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiServiceFactory {
 
-    private val BASE_URL = "http://localhost:8080/api/"
+    private val BASE_URL = "https://backend-b2b-spring.onrender.com/api/"
 
     private val httpClient by lazy {
         OkHttpClient.Builder()

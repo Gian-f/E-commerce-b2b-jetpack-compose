@@ -10,7 +10,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val service: ApiService
 ) : AuthRepository {
-    override fun authenticate(loginRequest: LoginRequest): Result<LoginResponse> {
+    override suspend fun authenticate(loginRequest: LoginRequest): Result<LoginResponse> {
         return try {
             val response = service.authenticate(loginRequest).execute()
             if (response.isSuccessful) {
@@ -30,7 +30,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun createUser(createUserRequest: CreateUserRequest): Result<CreateUserResponse> {
+    override suspend fun createUser(createUserRequest: CreateUserRequest): Result<CreateUserResponse> {
         return try {
             val response = service.createUser(createUserRequest).execute()
             if (response.isSuccessful) {

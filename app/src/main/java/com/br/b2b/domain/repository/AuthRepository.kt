@@ -6,7 +6,7 @@ import com.br.b2b.data.remote.dto.response.CreateUserResponse
 import com.br.b2b.data.remote.dto.response.LoginResponse
 
 interface AuthRepository {
-    fun authenticate(loginRequest: LoginRequest) : Result<LoginResponse>
+    suspend fun authenticate(loginRequest: LoginRequest) : Result<LoginResponse>
 
-    fun createUser(createUserRequest: CreateUserRequest): Result<CreateUserResponse>
+    suspend fun createUser(createUserRequest: CreateUserRequest): Result<CreateUserResponse>
 }
