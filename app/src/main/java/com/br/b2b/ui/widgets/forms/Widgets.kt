@@ -19,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -45,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import com.br.b2b.ui.theme.GrayColor
 import com.br.b2b.ui.theme.TextColor
 import com.br.b2b.ui.theme.componentShapes
+import com.br.b2b.util.applyCpfMask
 import com.br.jetpacktest.R
 
 @Composable
@@ -119,6 +120,64 @@ fun MyTextFieldComponent(
         maxLines = 1,
         value = textValue.value,
         onValueChange = onTextChanged,
+        leadingIcon = {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource,
+                contentDescription = ""
+            )
+        },
+        supportingText = {
+            Text(text = if (isFocused.value) if (!errorStatus) "Digite um $fieldName válido" else "" else "")
+        },
+        isError = if (isFocused.value) !errorStatus else false,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CPFTextFieldComponent(
+    labelValue: String,
+    painterResource: Painter,
+    onTextChanged: (String) -> Unit,
+    fieldName: String,
+    errorStatus: Boolean = false,
+) {
+    val textValue = remember { mutableStateOf(TextFieldValue("")) }
+    val isFocused = remember { mutableStateOf(false) }
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(componentShapes.small)
+            .onFocusChanged { hasFocus -> isFocused.value = hasFocus.isFocused }
+            .focusRequester(FocusRequester()),
+        label = { Text(text = labelValue) },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            disabledTextColor = Color.Transparent,
+            disabledBorderColor = Color.Transparent,
+            errorBorderColor = Color.Transparent,
+            errorContainerColor = Color(0xFFE7E7E7),
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            containerColor = Color(0xFFE7E7E7),
+        ),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Number
+        ),
+        singleLine = true,
+        maxLines = 1,
+        value = textValue.value,
+        onValueChange = { value ->
+            val unmaskedText = value.text.filter {
+                it.isDigit()
+            }
+            if (unmaskedText.length <= 11) {
+                val maskedValue = applyCpfMask(value, value.selection.end)
+                textValue.value = maskedValue
+                onTextChanged(maskedValue.text)
+            }
+        },
         leadingIcon = {
             Icon(
                 modifier = Modifier.size(24.dp),

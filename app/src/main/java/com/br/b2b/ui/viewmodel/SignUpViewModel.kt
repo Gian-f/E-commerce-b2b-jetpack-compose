@@ -21,6 +21,9 @@ class SignUpViewModel @Inject constructor(
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
 
+    private val _cpf = MutableStateFlow("")
+    val cpf: StateFlow<String> = _cpf
+
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
@@ -48,6 +51,10 @@ class SignUpViewModel @Inject constructor(
         _email.emit(email)
     }
 
+    suspend fun updateCPF(cpf: String) {
+        _cpf.emit(cpf)
+    }
+
     suspend fun updatePassword(password: String) {
         _password.emit(password)
     }
@@ -65,8 +72,11 @@ class SignUpViewModel @Inject constructor(
             _isLoading.value = true
             val newUser = CreateUserRequest(
                 name = name.value,
+                email = email.value,
                 password = password.value,
-                termsCondition = termsCondition.value
+                confirmPassword = password.value,
+                cpf = cpf.value,
+                termsConditions = termsCondition.value
             )
             runCatching {
                 repository.createUser(newUser)
@@ -76,7 +86,7 @@ class SignUpViewModel @Inject constructor(
                     onSuccess.invoke()
                 } else {
                     val error =
-                        response.exceptionOrNull()?.message
+                        response.getOrNull()?.message
                             ?: "Existem informações inválidas. \n Por favor, verifique o formulário e tente novamente!"
                     onFailure.invoke()
                     _errorMessage.value = error
@@ -116,7 +126,7 @@ class SignUpViewModel @Inject constructor(
         return false
     }
 
-    private fun isEmailValid(email: String): Boolean {
+    fun isEmailValid(email: String): Boolean {
         val emailRegex = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
         return emailRegex.toRegex().matches(email)
     }

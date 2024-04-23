@@ -6,6 +6,9 @@ import androidx.annotation.Keep
 
 data class CreateUserRequest(
     val name: String,
+    val email: String,
+    val confirmPassword: String,
     val password: String,
-    val termsCondition: Boolean = false
+    val cpf: String,
+    val termsConditions: Boolean = false
 )

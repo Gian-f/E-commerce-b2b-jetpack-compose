@@ -33,6 +33,8 @@
 
 -keep class com.br.b2b.domain.** { *; }
 
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
 # Remover referências não utilizadas
 -whyareyoukeeping class *

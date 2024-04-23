@@ -12,7 +12,7 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
     override suspend fun authenticate(loginRequest: LoginRequest): Result<LoginResponse> {
         return try {
-            val response = service.authenticate(loginRequest).execute()
+            val response = service.authenticate(loginRequest)
             if (response.isSuccessful) {
                 val responseBody = response.body()
                 if (responseBody != null) {
@@ -32,7 +32,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun createUser(createUserRequest: CreateUserRequest): Result<CreateUserResponse> {
         return try {
-            val response = service.createUser(createUserRequest).execute()
+            val response = service.createUser(createUserRequest)
             if (response.isSuccessful) {
                 val responseBody = response.body()
                 if (responseBody != null) {

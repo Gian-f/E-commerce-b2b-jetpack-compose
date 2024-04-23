@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +15,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -46,24 +49,20 @@ fun SplashScreen(
     loginViewModel: LoginViewModel,
 ) {
     val context = LocalContext.current as Activity
-    val scope = rememberCoroutineScope()
     val splashKey = remember { UUID.randomUUID().toString() }
+    val isLoginVisible = remember { mutableStateOf(false) }
     context.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
     LaunchedEffect(splashKey) {
-        scope.launch {
-            delay(2000)
-            navController.navigate(Screen.Login.route)
-        }
+        isLoginVisible.value = true
+        delay(2000)
+        navController.navigate(Screen.Login.route)
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
         AnimatedVisibility(
-            visible = true,
-            enter = slideInVertically(
-                initialOffsetY = { -it / 3 },
-                animationSpec = TweenSpec(durationMillis = 1500, delay = 4000)
-            )
+            visible = isLoginVisible.value,
+            enter = slideInHorizontally()
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -74,12 +73,12 @@ fun SplashScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_cart),
+                        painter = painterResource(id = R.drawable.nova_logo),
                         contentDescription = "Logo",
-                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .height(150.dp)
+                            .padding(bottom = 16.dp)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),

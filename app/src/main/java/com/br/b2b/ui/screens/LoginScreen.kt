@@ -96,32 +96,37 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_cart),
-                contentDescription = "Logo",
-                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .height(150.dp)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Compra",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = TextUnit(26F, TextUnitType.Sp),
-                    color = MaterialTheme.colorScheme.primary
+                Image(
+                    painter = painterResource(id = R.drawable.nova_logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(150.dp)
+                        .padding(bottom = 16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Certa",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = TextUnit(26F, TextUnitType.Sp),
-                    color = Color(0xFF0097b2)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Compra",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = TextUnit(26F, TextUnitType.Sp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Certa",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = TextUnit(26F, TextUnitType.Sp),
+                        color = Color(0xFF0097b2)
+                    )
+                }
             }
             OutlinedTextFieldValidation(
                 value = login,
@@ -203,7 +208,7 @@ fun LoginScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = "Não possui uma conta?")
-                    TextButton(onClick = { navController.navigate(Screen.Products.route) }) {
+                    TextButton(onClick = { navController.navigate(Screen.Register.route) }) {
                         Text(text = "Registre-se")
                     }
                 }

@@ -6,6 +6,6 @@ import com.google.gson.annotations.SerializedName
 @Keep
 data class CreateUserResponse(
     val message: String,
-    val result: String,
+    val result: User,
     val status: Boolean,
 )

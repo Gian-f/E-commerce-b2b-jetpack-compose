@@ -1,6 +1,7 @@
 package com.br.b2b.ui.screens
 
 import ButtonComponent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,6 +30,7 @@ import com.br.b2b.domain.routes.OnBackPress
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.viewmodel.SignUpViewModel
 import com.br.b2b.ui.widgets.dialogs.ShowErrorSheet
+import com.br.b2b.ui.widgets.forms.CPFTextFieldComponent
 import com.br.b2b.ui.widgets.forms.CheckboxComponent
 import com.br.b2b.ui.widgets.forms.ClickableLoginTextComponent
 import com.br.b2b.ui.widgets.forms.DividerTextComponent
@@ -45,8 +48,10 @@ fun RegisterScreen(
     signUpViewModel: SignUpViewModel,
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val nameState = signUpViewModel.name.collectAsStateWithLifecycle()
     val emailState = signUpViewModel.email.collectAsStateWithLifecycle()
+    val cpfState = signUpViewModel.cpf.collectAsStateWithLifecycle()
     val errorState = signUpViewModel.errorMessage.collectAsStateWithLifecycle()
 
     val passwordState = signUpViewModel.password.collectAsStateWithLifecycle()
@@ -120,7 +125,19 @@ fun RegisterScreen(
                         signUpViewModel.updateEmail(it)
                     }
                 },
-                errorStatus = emailState.value.isNotEmpty()
+                errorStatus = signUpViewModel.isEmailValid(emailState.value)
+            )
+
+            CPFTextFieldComponent(
+                fieldName = "CPF",
+                labelValue = stringResource(id = R.string.cpf),
+                painterResource = painterResource(id = R.drawable.ic_person_search),
+                onTextChanged = {
+                    scope.launch {
+                        signUpViewModel.updateCPF(it)
+                    }
+                },
+                errorStatus = cpfState.value.filter { it.isDigit() }.length == 11
             )
 
             PasswordTextFieldComponent(
@@ -156,6 +173,11 @@ fun RegisterScreen(
                     signUpViewModel.createUser(
                         onSuccess = {
                             navController.navigate(Screen.Products.route)
+                            Toast.makeText(
+                                context,
+                                "Usuário criado com sucesso!",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         },
                         onFailure = {
                             scope.launch {

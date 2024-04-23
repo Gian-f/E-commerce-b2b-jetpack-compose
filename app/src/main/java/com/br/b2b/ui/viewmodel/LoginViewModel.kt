@@ -45,19 +45,17 @@ class LoginViewModel @Inject constructor(
         onFailure: () -> Unit,
     ) {
         _isLoginLoading.value = true
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             runCatching {
                 authRepository.authenticate(LoginRequest(username.value, password.value))
             }.onSuccess { loginResponse ->
-                withContext(Dispatchers.Main) {
-                    val response = loginResponse.getOrNull()
-                    if (response != null && response.status) {
-                        clear()
-                        onSuccess.invoke()
-                    } else {
-                        _loginError.value = response?.message ?: "E-mail ou senha inválidos!"
-                        onFailure.invoke()
-                    }
+                val response = loginResponse.getOrNull()
+                if (response != null && response.status) {
+                    clear()
+                    onSuccess.invoke()
+                } else {
+                    _loginError.value = response?.message ?: "E-mail ou senha inválidos!"
+                    onFailure.invoke()
                 }
             }.onFailure {
                 onFailure.invoke()

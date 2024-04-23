@@ -6,6 +6,7 @@
     <string name="first_name">Nome completo</string>
     <string name="last_name">Sobrenome</string>
     <string name="email">E-mail</string>
+    <string name="cpf">CPF</string>
     <string name="password">Senha</string>
     <string name="hide_password">Esconder senha</string>
     <string name="show_password">Mostrar senha</string>

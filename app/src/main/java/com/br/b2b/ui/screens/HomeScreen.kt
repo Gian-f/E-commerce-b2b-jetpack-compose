@@ -302,17 +302,38 @@ private fun PageContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
-                CenterAlignedTopAppBar(title = {
-                }, navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                }, actions = {
-                    TopAppBarActions(navController)
-                })
+                CenterAlignedTopAppBar(
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Compra",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = TextUnit(20F, TextUnitType.Sp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Certa",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = TextUnit(20F, TextUnitType.Sp),
+                                color = Color(0xFF0097b2)
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                imageVector = Icons.Filled.Menu,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                    }, actions = {
+                        TopAppBarActions(navController)
+                    })
                 Text(
                     modifier = Modifier.padding(start = 16.dp, bottom = 12.dp),
                     text = "Olá! Você está pronto para descobrir algo incrível hoje?",
@@ -324,9 +345,11 @@ private fun PageContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row {
-                        DockedSearchBar(modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(8.dp),
+                        DockedSearchBar(
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .padding(8.dp),
+                            shape = RoundedCornerShape(16.dp),
                             query = query.ifEmpty { voiceState.spokenText },
                             onQueryChange = { currentQuery ->
                                 query = currentQuery.ifBlank { voiceState.spokenText }
@@ -394,11 +417,13 @@ private fun PageContent(
                                                 })
                                     }
                                 }
-                            }) {
-                            items.reversed().forEach { itemName ->
-                                HistoryItem(name = itemName)
+                            },
+                            content = {
+                                items.reversed().forEach { itemName ->
+                                    HistoryItem(name = itemName)
+                                }
                             }
-                        }
+                        )
                         FilterButton(
                             onClick = { scope.launch { sheetState.show() } },
                             modifier = Modifier
@@ -544,7 +569,7 @@ private fun TopAppBarActions(navController: NavHostController) {
                 contentDescription = "Notifications"
             )
         }
-        IconButton(onClick = {  }) {
+        IconButton(onClick = { }) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
                 modifier = Modifier.size(24.dp),
