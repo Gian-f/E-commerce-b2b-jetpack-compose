@@ -366,7 +366,7 @@ fun SegmentedButton(
 
 @Composable
 fun CategoriesButton(
-    label: String,
+    name: String,
     icon: ImageVector,
     onClick: () -> Unit,
 ) {
@@ -397,7 +397,7 @@ fun CategoriesButton(
             )
         }
         Text(
-            text = label,
+            text = name,
             fontWeight = FontWeight.W600,
             fontSize = TextUnit(11f, TextUnitType.Sp)
         )

@@ -6,51 +6,52 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.NoteAlt
-import com.br.b2b.domain.model.Categories
+import com.br.b2b.domain.model.Category
 import javax.annotation.concurrent.Immutable
 
+/*
 @Immutable
 object CategoriesDummyData {
     val categories = listOf(
-        Categories(
-            label = "HomeCare",
-            icon = Icons.Filled.Home
+        Category(
+            name = "HomeCare",
+            image = Icons.Filled.Home
         ),
-        Categories(
-            label = "Automotivo",
-            icon = Icons.Filled.DirectionsCar
+        Category(
+            name = "Automotivo",
+            image = Icons.Filled.DirectionsCar
         ),
-        Categories(
-            label = "Saúde",
-            icon = Icons.Filled.MonitorHeart
+        Category(
+            name = "Saúde",
+            image = Icons.Filled.MonitorHeart
         ),
-        Categories(
-            label = "Crianças",
-            icon = Icons.Filled.ChildFriendly
+        Category(
+            name = "Crianças",
+            image = Icons.Filled.ChildFriendly
         ),
-        Categories(
-            label = "Papelaria",
-            icon = Icons.Filled.NoteAlt
+        Category(
+            name = "Papelaria",
+            image = Icons.Filled.NoteAlt
         ),
-        Categories(
-            label = "Teste 1",
-            icon = Icons.Filled.Home
+        Category(
+            name = "Teste 1",
+            image = Icons.Filled.Home
         ),
-        Categories(
-            label = "Teste 2",
-            icon = Icons.Filled.DirectionsCar
+        Category(
+            name = "Teste 2",
+            image = Icons.Filled.DirectionsCar
         ),
-        Categories(
-            label = "Teste 3",
-            icon = Icons.Filled.MonitorHeart
+        Category(
+            name = "Teste 3",
+            image = Icons.Filled.MonitorHeart
         ),
-        Categories(
-            label = "Teste 4",
-            icon = Icons.Filled.ChildFriendly
+        Category(
+            name = "Teste 4",
+            image = Icons.Filled.ChildFriendly
         ),
-        Categories(
-            label = "Teste 5",
-            icon = Icons.Filled.NoteAlt
+        Category(
+            name = "Teste 5",
+            image = Icons.Filled.NoteAlt
         ),
     )
-}
+}*/

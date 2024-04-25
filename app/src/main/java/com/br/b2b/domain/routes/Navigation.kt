@@ -16,6 +16,7 @@ import com.br.b2b.ui.screens.SettingsScreen
 import com.br.b2b.ui.screens.SplashScreen
 import com.br.b2b.ui.viewmodel.LoginViewModel
 import com.br.b2b.ui.viewmodel.SignUpViewModel
+import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
 
 
@@ -23,6 +24,7 @@ import com.br.b2b.ui.viewmodel.ThemeViewModel
 fun Navigation(navController: NavHostController) {
     val themeViewModel = hiltViewModel<ThemeViewModel>()
     val loginViewModel = hiltViewModel<LoginViewModel>()
+    val storeViewModel = hiltViewModel<StoreViewModel>()
     val signUpViewModel = hiltViewModel<SignUpViewModel>()
     NavHost(
         navController = navController,
@@ -38,7 +40,7 @@ fun Navigation(navController: NavHostController) {
             RegisterScreen(navController, signUpViewModel)
         }
         composable(Screen.Products.route) {
-            HomeScreen(navController, themeViewModel)
+            HomeScreen(navController, themeViewModel,storeViewModel)
         }
         composable(Screen.Settings.route) {
             SettingsScreen(navController)

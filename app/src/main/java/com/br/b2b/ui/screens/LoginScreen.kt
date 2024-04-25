@@ -101,7 +101,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.nova_logo),
+                    painter = painterResource(id = R.drawable.logo),
                     contentDescription = "Logo",
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -302,7 +302,7 @@ fun ButtonComponent(
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(Color.Transparent),
         shape = RoundedCornerShape(8.dp),
-        enabled = true
+        enabled = !isLoading
     ) {
         Box(
             modifier = Modifier

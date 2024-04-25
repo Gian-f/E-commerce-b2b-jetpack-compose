@@ -8,16 +8,28 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Duration
 
+import java.util.concurrent.TimeUnit
+
 object ApiServiceFactory {
 
-    private val BASE_URL = "https://backend-b2b-spring.onrender.com/api/"
+    private const val BASE_URL = "https://backend-b2b-spring.onrender.com/api/"
 
     private val httpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
-            .callTimeout(Duration.ofMinutes(10))
+            .connectTimeout(200, TimeUnit.SECONDS)
+            .readTimeout(200, TimeUnit.SECONDS)
+            .writeTimeout(200, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("Accept", "application/json")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("connection", "keep-alive")
+                    .build()
+                chain.proceed(request)
+            }
             .build()
     }
 

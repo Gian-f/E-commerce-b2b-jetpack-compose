@@ -19,7 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.br.b2b.data.dummy.BannersDummyData.banners
+import com.br.b2b.domain.model.Category
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PagerIndicator(
     pagerState: PagerState,
+    categories: List<Category>?,
     scope: CoroutineScope = rememberCoroutineScope(),
 ) {
     Row(
@@ -35,7 +36,7 @@ fun PagerIndicator(
             .padding(top = 12.dp, start = 16.dp, end = 16.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        repeat(banners.size) { index ->
+        repeat(categories?.size?: 0) { index ->
             Box(
                 modifier = Modifier
                     .size(6.dp)

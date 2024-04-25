@@ -4,20 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.br.b2b.data.remote.dto.request.LoginRequest
 import com.br.b2b.domain.repository.AuthRepository
-import com.br.b2b.domain.repository.AuthRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepositoryImpl,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _username = MutableStateFlow("")

@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +35,6 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -45,6 +43,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -85,42 +84,39 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import coil.compose.rememberAsyncImagePainter
-import com.br.b2b.data.dummy.BannersDummyData.banners
-import com.br.b2b.data.dummy.CategoriesDummyData.categories
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.br.b2b.data.dummy.NavigationDrawerData
 import com.br.b2b.data.dummy.NotificationsData.items
-import com.br.b2b.data.dummy.ProductsData.products
-import com.br.b2b.domain.model.Products
-import com.br.b2b.domain.routes.OnBackPress
+import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.BottomSheetModalFilter
-import com.br.b2b.ui.components.CategoriesButton
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.components.FilterButton
 import com.br.b2b.ui.components.HistoryItem
 import com.br.b2b.ui.components.PagerIndicator
 import com.br.b2b.ui.components.SegmentedButton
 import com.br.b2b.ui.theme.BgColor
+import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
 import com.br.b2b.util.ComposeTheme
+import com.br.b2b.util.FormatCurrency
 import com.br.b2b.util.VoiceToTextParser
 import com.br.jetpacktest.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavHostController, themeViewModel: ThemeViewModel) {
-    HomeContent(navController, themeViewModel)
-}
-
-@Composable
-private fun HomeContent(navController: NavHostController, themeViewModel: ThemeViewModel) {
+fun HomeScreen(
+    navController: NavHostController,
+    themeViewModel: ThemeViewModel,
+    storeViewModel: StoreViewModel
+) {
     val navigationItems = NavigationDrawerData.items
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -182,7 +178,7 @@ private fun HomeContent(navController: NavHostController, themeViewModel: ThemeV
         gesturesEnabled = true,
         drawerState = drawerState
     ) {
-        PageContent(scope, drawerState, navController)
+        HomeContent(scope, drawerState, navController, storeViewModel)
         ConfirmDialog(
             dialogState = openDialog,
             message = "Tem certeza que deseja sair?",
@@ -256,10 +252,11 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>) {
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
 )
-private fun PageContent(
+private fun HomeContent(
     scope: CoroutineScope,
     drawerState: DrawerState,
     navController: NavHostController,
+    storeViewModel: StoreViewModel
 ) {
     var isSearchBarVisible by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -267,8 +264,9 @@ private fun PageContent(
     val items: MutableList<String> = remember { mutableStateListOf() }
     val sheetState = rememberModalBottomSheetState(true)
     val snackbarHostState = remember { SnackbarHostState() }
-    val bannerPager = rememberPagerState { banners.size }
-
+    val products by storeViewModel.products.collectAsStateWithLifecycle()
+    val categories by storeViewModel.categories.collectAsStateWithLifecycle()
+    val bannerPager = rememberPagerState { categories?.size ?: 0 }
     val application = LocalContext.current.applicationContext as Application
 
     val voiceToTextParser by remember { mutableStateOf(VoiceToTextParser(application)) }
@@ -453,18 +451,18 @@ private fun PageContent(
                             .fillMaxWidth()
                             .padding(bottom = 12.dp, top = 8.dp, start = 4.dp, end = 12.dp)
                     ) {
-                        items(
-                            items = categories,
-                            key = { it.label },
-                            contentType = { it.label }
+/*                        items(
+                            items = categories.orEmpty(),
+                            key = { it.name },
+                            contentType = { it.name }
                         ) { categories ->
                             CategoriesButton(
-                                label = categories.label,
-                                icon = categories.icon,
+                                name = categories.name,
+                                icon = categories.image,
                                 onClick = {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
-                                            message = categories.label,
+                                            message = categories.name,
                                             actionLabel = null,
                                             withDismissAction = true,
                                             duration = SnackbarDuration.Short
@@ -472,7 +470,7 @@ private fun PageContent(
                                     }
                                 }
                             )
-                        }
+                        }*/
                     }
                 }
 
@@ -481,8 +479,7 @@ private fun PageContent(
                         modifier = Modifier.padding(top = 16.dp),
                         state = bannerPager,
                     ) { index ->
-                        val url = banners[index].image
-                        val imagePainter = rememberAsyncImagePainter(url)
+                        val url = categories?.get(index)?.image
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -493,15 +490,19 @@ private fun PageContent(
                             elevation = CardDefaults.cardElevation(3.dp),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Image(
+                            SubcomposeAsyncImage(
                                 modifier = Modifier.fillMaxSize(),
-                                painter = imagePainter,
-                                contentDescription = null,
+                                model = url,
+                                alignment = Alignment.Center,
                                 contentScale = ContentScale.FillBounds,
+                                loading = {
+                                    CircularProgressIndicator(modifier = Modifier.size(14.dp))
+                                },
+                                contentDescription = null,
                             )
                         }
                     }
-                    PagerIndicator(bannerPager)
+                    PagerIndicator(bannerPager, categories)
                 }
 
                 item {
@@ -510,13 +511,13 @@ private fun PageContent(
                         contentPadding = PaddingValues(end = 64.dp),
                     ) {
                         items(
-                            items = products,
+                            items = products.orEmpty(),
                             key = { item -> item.id },
                             contentType = { item -> item.id }) { product ->
                             ProductItem(
                                 product = product,
                                 onFavoriteClicked = {
-
+                                    product.isFavorited = true
                                 }
                             )
                         }
@@ -532,13 +533,13 @@ private fun PageContent(
                         contentPadding = PaddingValues(end = 64.dp),
                     ) {
                         items(
-                            items = products,
+                            items = products.orEmpty(),
                             key = { item -> item.id },
                             contentType = { item -> item.id }) { product ->
                             ProductItem(
                                 product = product,
                                 onFavoriteClicked = {
-
+                                    product.isFavorited = true
                                 }
                             )
                         }
@@ -601,8 +602,7 @@ fun SectionTitle(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProductItem(product: Products, onFavoriteClicked: () -> Unit) {
-    val imagePainter = rememberAsyncImagePainter(product.image)
+fun ProductItem(product: Product, onFavoriteClicked: () -> Unit) {
     Card(
         modifier = Modifier
             .width(180.dp)
@@ -614,11 +614,18 @@ fun ProductItem(product: Products, onFavoriteClicked: () -> Unit) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.weight(1f)) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = imagePainter,
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(product.images[0])
+                        .crossfade(true)
+                        .build(),
+                    loading = {
+                        CircularProgressIndicator()
+                    },
                     contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
+                    alignment = Alignment.Center,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.clip(CircleShape)
                 )
                 IconButton(
                     onClick = onFavoriteClicked,
@@ -648,7 +655,7 @@ fun ProductItem(product: Products, onFavoriteClicked: () -> Unit) {
                         fontWeight = FontWeight.W400
                     )
                     Text(
-                        text = product.price,
+                        text = FormatCurrency(product.price),
                         textAlign = TextAlign.Start,
                         fontWeight = FontWeight.Bold,
                         fontSize = TextUnit(13F, TextUnitType.Sp)
