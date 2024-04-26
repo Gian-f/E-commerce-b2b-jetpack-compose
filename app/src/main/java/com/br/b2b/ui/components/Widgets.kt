@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -363,6 +365,47 @@ fun SegmentedButton(
         }
     }
 }
+
+@Composable
+fun CategoriesButton(
+    name: String,
+    onClick: () -> Unit
+) {
+    var selected by remember { mutableStateOf(false) }
+
+    val updatedOnClick by rememberUpdatedState(onClick)
+
+    @Composable
+    fun LeadingIcon() {
+        if (selected) {
+            Icon(
+                imageVector = Icons.Filled.Done,
+                contentDescription = "Done icon",
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        FilterChip(
+            onClick = {
+                updatedOnClick()
+                selected = !selected
+            },
+            label = {
+                Text(name)
+            },
+            selected = selected,
+            leadingIcon = { LeadingIcon() }
+        )
+    }
+}
+
 
 @Composable
 fun CategoriesButton(

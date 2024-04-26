@@ -17,6 +17,9 @@
 -keep class com.br.b2b.data.domain.viewmodels.** { *; }
 -keep class com.br.b2b.data.R.** { *; }
 -keep class kotlin.collections.* { *; }
+-keep class com.google.gson.reflect.TypeToken
+-keep class * extends com.google.gson.reflect.TypeToken
+-keep public class * implements java.lang.reflect.Type
 
 # Remover logs de depuração
 -assumenosideeffects class android.util.Log {

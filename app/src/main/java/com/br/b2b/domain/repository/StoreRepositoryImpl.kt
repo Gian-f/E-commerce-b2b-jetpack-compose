@@ -1,38 +1,110 @@
 package com.br.b2b.domain.repository
 
+import com.br.b2b.data.local.converter.convertProduct
+import com.br.b2b.data.local.dao.CategoryDao
+import com.br.b2b.data.local.dao.ProductDao
 import com.br.b2b.data.remote.dto.response.CategoryResponse
 import com.br.b2b.data.remote.dto.response.ProductResponse
 import com.br.b2b.data.remote.service.ApiService
+import com.br.b2b.domain.model.Category
+import com.br.b2b.domain.model.Product
+import com.br.b2b.domain.model.ProductData
 import javax.inject.Inject
 
 class StoreRepositoryImpl
 @Inject constructor(
-    private val service: ApiService
+    private val service: ApiService,
+    private val productDao: ProductDao,
+    private val categoryDao: CategoryDao
 ) : StoreRepository {
 
     override suspend fun fetchAllProducts(): Result<ProductResponse?> {
-        return try {
+        return runCatching {
             val response = service.fetchAllProducts()
             if (response.isSuccessful) {
-                Result.success(response.body())
+                val productResponse = response.body()
+                if (productResponse != null) {
+                    val products = convertProduct(productResponse.result)
+                    createProducts(products)
+                    productResponse
+                } else {
+                    throw Exception("Erro ao trazer produtos: Resposta vazia")
+                }
             } else {
-                Result.failure(NullPointerException("Erro ao trazer produtos"))
+                throw Exception("Erro ao trazer produtos: ${response.message()}")
             }
-        } catch (e: Exception) {
-            Result.failure(Exception("Erro ao trazer produtos: ${e.message}"))
         }
     }
 
     override suspend fun fetchAllCategories(): Result<CategoryResponse?> {
-        return try {
+        return runCatching {
             val response = service.fetchAllCategories()
-            if(response.isSuccessful) {
-                Result.success(response.body())
+            if (response.isSuccessful) {
+                createCategories(response.body()?.result ?: emptyList())
+                response.body()
             } else {
-                Result.failure(Exception("Erro ao trazer categorias: ${response.message()}"))
+                throw Exception("Erro ao trazer categorias: ${response.message()}")
             }
-        } catch (e: Exception) {
-            Result.failure(Exception("Erro ao trazer categorias: ${e.message}"))
+        }
+    }
+
+    override suspend fun findProductById(id: Int): Result<Product> {
+        return runCatching {
+            val product = productDao.findById(id)
+            if (product != null) {
+                product
+            } else {
+                throw Exception("Produto não encontrado")
+            }
+        }
+    }
+
+    override suspend fun createProduct(product: Product?): Result<Unit> {
+        return runCatching {
+            if (product != null) {
+                productDao.createProduct(product)
+            } else {
+                throw Exception("Produto nulo não pode ser criado")
+            }
+        }.onFailure { e ->
+            println(e)
+        }
+    }
+
+    override suspend fun createProducts(products: List<Product>): Result<Unit> {
+        return runCatching {
+            if (products.isNotEmpty()) {
+                productDao.createProducts(*products.toTypedArray())
+            } else {
+                throw Exception("Lista de produtos vazia não pode ser criada")
+            }
+        }.onFailure { e ->
+            println(e)
+        }
+    }
+
+
+    override suspend fun createCategory(category: Category?): Result<Unit> {
+        return runCatching {
+            if (category != null) {
+                categoryDao.createCategory(category)
+            } else {
+                throw Exception("Categoria nula não pode ser criado")
+            }
+        }.onFailure { e ->
+            println(e)
+        }
+    }
+
+    override suspend fun createCategories(categories: List<Category>): Result<Unit> {
+        return runCatching {
+            if (categories.isNotEmpty()) {
+                categoryDao.createCategories(*categories.toTypedArray())
+            } else {
+                throw Exception("Lista de categorias vazia não pode ser criada")
+            }
+        }.onFailure { e ->
+            println(e)
         }
     }
 }

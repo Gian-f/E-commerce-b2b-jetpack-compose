@@ -61,6 +61,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -79,6 +80,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -89,19 +91,23 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.br.b2b.data.dummy.NavigationDrawerData
 import com.br.b2b.data.dummy.NotificationsData.items
 import com.br.b2b.domain.model.Product
+import com.br.b2b.domain.routes.OnBackPress
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.BottomSheetModalFilter
+import com.br.b2b.ui.components.CategoriesButton
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.components.FilterButton
 import com.br.b2b.ui.components.HistoryItem
 import com.br.b2b.ui.components.PagerIndicator
 import com.br.b2b.ui.components.SegmentedButton
 import com.br.b2b.ui.theme.BgColor
+import com.br.b2b.ui.theme.Secondary
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
 import com.br.b2b.util.ComposeTheme
@@ -122,6 +128,15 @@ fun HomeScreen(
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val openDialog = remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        storeViewModel.fetchCategories()
+        storeViewModel.fetchProducts()
+    }
+
+    OnBackPress {
+        openDialog.value = true
+    }
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -449,28 +464,18 @@ private fun HomeContent(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 12.dp, top = 8.dp, start = 4.dp, end = 12.dp)
+                            .padding(bottom = 8.dp, top = 8.dp, start = 12.dp, end = 12.dp)
                     ) {
-/*                        items(
+                        items(
                             items = categories.orEmpty(),
-                            key = { it.name },
-                            contentType = { it.name }
+                            key = { it.id },
+                            contentType = { it.id }
                         ) { categories ->
                             CategoriesButton(
                                 name = categories.name,
-                                icon = categories.image,
-                                onClick = {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = categories.name,
-                                            actionLabel = null,
-                                            withDismissAction = true,
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                }
+                                onClick = {}
                             )
-                        }*/
+                        }
                     }
                 }
 
@@ -496,8 +501,13 @@ private fun HomeContent(
                                 alignment = Alignment.Center,
                                 contentScale = ContentScale.FillBounds,
                                 loading = {
-                                    CircularProgressIndicator(modifier = Modifier.size(14.dp))
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        strokeWidth = 1.dp,
+                                        modifier = Modifier.size(22.dp)
+                                    )
                                 },
+                                filterQuality = FilterQuality.Medium,
                                 contentDescription = null,
                             )
                         }
@@ -516,8 +526,11 @@ private fun HomeContent(
                             contentType = { item -> item.id }) { product ->
                             ProductItem(
                                 product = product,
+                                onProductClicked = {
+                                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+                                },
                                 onFavoriteClicked = {
-                                    product.isFavorited = true
+                                    product.isFavorited = !product.isFavorited
                                 }
                             )
                         }
@@ -538,8 +551,11 @@ private fun HomeContent(
                             contentType = { item -> item.id }) { product ->
                             ProductItem(
                                 product = product,
+                                onProductClicked = {
+                                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+                                },
                                 onFavoriteClicked = {
-                                    product.isFavorited = true
+                                    product.isFavorited = !product.isFavorited
                                 }
                             )
                         }
@@ -596,44 +612,61 @@ fun SectionTitle(title: String, modifier: Modifier = Modifier) {
             text = "Ver mais",
             fontWeight = FontWeight.SemiBold,
             fontSize = TextUnit(13F, TextUnitType.Sp),
-            color = MaterialTheme.colorScheme.primary
-        )
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .clickable { })
     }
 }
 
 @Composable
-fun ProductItem(product: Product, onFavoriteClicked: () -> Unit) {
+fun ProductItem(
+    product: Product,
+    onProductClicked: (Product) -> Unit,
+    onFavoriteClicked: () -> Unit
+) {
+    var isClicked by rememberSaveable { mutableStateOf(false) }
+    val url by remember { mutableStateOf(product.images[0]) }
     Card(
+        elevation = CardDefaults.cardElevation(8.dp),
         modifier = Modifier
             .width(180.dp)
             .height(230.dp)
             .padding(12.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable { },
-        elevation = CardDefaults.cardElevation(16.dp),
+            .clickable {
+                onProductClicked.invoke(product)
+            }
+            .padding(3.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.weight(1f)) {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(product.images[0])
+                        .data(url)
                         .crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator()
                     },
                     contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
                     alignment = Alignment.Center,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.clip(CircleShape)
+                    filterQuality = FilterQuality.Medium,
+                    contentScale = ContentScale.FillBounds,
                 )
                 IconButton(
-                    onClick = onFavoriteClicked,
+                    onClick = {
+                        isClicked = !isClicked
+                        onFavoriteClicked.invoke()
+                    },
                     modifier = Modifier
+                        .size(34.dp)
+                        .padding(end = 12.dp, top = 12.dp)
                         .align(Alignment.TopEnd)
                 ) {
                     Icon(
-                        imageVector = if (product.isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        imageVector = if (isClicked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Favoritar produto",
                         tint = Color.Red
                     )
@@ -641,7 +674,8 @@ fun ProductItem(product: Product, onFavoriteClicked: () -> Unit) {
             }
             Surface(
                 color = BgColor,
-                modifier = Modifier
+                tonalElevation = 20.dp,
+                shadowElevation = 12.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -649,16 +683,18 @@ fun ProductItem(product: Product, onFavoriteClicked: () -> Unit) {
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = product.description,
+                        text = product.title,
                         textAlign = TextAlign.Start,
-                        fontSize = TextUnit(11F, TextUnitType.Sp),
-                        fontWeight = FontWeight.W400
+                        maxLines = 1,
+                        fontSize = TextUnit(9F, TextUnitType.Sp),
+                        fontWeight = FontWeight.W500
                     )
                     Text(
                         text = FormatCurrency(product.price),
                         textAlign = TextAlign.Start,
                         fontWeight = FontWeight.Bold,
-                        fontSize = TextUnit(13F, TextUnitType.Sp)
+                        maxLines = 1,
+                        fontSize = TextUnit(12F, TextUnitType.Sp)
                     )
                 }
             }

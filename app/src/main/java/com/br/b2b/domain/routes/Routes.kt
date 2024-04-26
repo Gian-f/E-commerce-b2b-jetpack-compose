@@ -20,6 +20,7 @@ sealed class Screen(val route: String, val title: String) {
     data  object Orders: Screen("orders", "Meus Pedidos")
     data object Titles: Screen("titles", "Títulos")
     data object MyCards: Screen("mycards", "Meus Cartões")
+    data object ProductDetail: Screen("details", "Detalhes")
     data object Splash: Screen("splash", "splash")
     data object Culture: Screen("culture", "Quem Somos")
     data object Contact: Screen("contact", "Contato")

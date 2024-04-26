@@ -172,7 +172,7 @@ fun RegisterScreen(
                 onButtonClicked = {
                     signUpViewModel.createUser(
                         onSuccess = {
-                            navController.navigate(Screen.Products.route)
+                            navController.navigate(Screen.Login.route)
                             Toast.makeText(
                                 context,
                                 "Usuário criado com sucesso!",
