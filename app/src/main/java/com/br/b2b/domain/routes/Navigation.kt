@@ -44,9 +44,7 @@ fun Navigation(navController: NavHostController) {
         composable(Screen.Register.route) {
             RegisterScreen(navController, signUpViewModel)
         }
-        composable(
-            Screen.Products.route,
-        ) {
+        composable(Screen.Products.route) {
             HomeScreen(navController, themeViewModel, storeViewModel)
         }
 
@@ -55,12 +53,20 @@ fun Navigation(navController: NavHostController) {
             arguments = listOf(navArgument("productId") { type = NavType.IntType }),
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getInt("productId")
-            ProductDetailScreen(navController, storeViewModel, productId)
+            ProductDetailScreen(
+                cartItemViewModel = cartItemViewModel,
+                storeViewModel = storeViewModel,
+                productId = productId,
+                onNavigate = {
+                    navController.navigate(Screen.CartItem.route)
+                },
+                onBackPress = {
+                    navController.popBackStack()
+                }
+            )
         }
 
-        composable(
-            Screen.Orders.route
-        ) {
+        composable(Screen.Orders.route) {
             OrdersScreen(navController)
         }
         composable(Screen.CartItem.route) {
@@ -69,9 +75,7 @@ fun Navigation(navController: NavHostController) {
         composable(Screen.Notifications.route) {
             NotificationsScreen(navController)
         }
-        composable(
-            Screen.Profile.route
-        ) {
+        composable(Screen.Profile.route) {
             ProfileScreen(navController)
         }
         composable(Screen.MyCards.route) {

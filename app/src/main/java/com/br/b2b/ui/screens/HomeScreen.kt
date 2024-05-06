@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -503,6 +504,7 @@ private fun HomeContent(
                                     contentScale = ContentScale.FillBounds,
                                     loading = {
                                         CircularProgressIndicator(
+                                            modifier = Modifier.requiredSize(50.dp),
                                             color = Color.Black,
                                             strokeWidth = 1.dp,
                                         )
@@ -633,13 +635,16 @@ fun ProductItem(
             }
             .padding(3.dp)) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(url)
                         .crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator(
+                            modifier = Modifier.requiredSize(50.dp),
                             color = Color.Black,
                             strokeWidth = 1.dp,
                         )
@@ -732,6 +737,7 @@ fun ProductItemFilter(
                         .build(),
                     loading = {
                         CircularProgressIndicator(
+                            modifier = Modifier.requiredSize(50.dp),
                             color = Color.Black,
                             strokeWidth = 1.dp,
                         )
@@ -807,10 +813,6 @@ fun ProductGrid(
         modifier = modifier
             .fillMaxSize()
     ) {
-        item {
-            Text(text = "Exibindo resultados para $query")
-        }
-
         items(
             items = filteredProducts.orEmpty(),
             key = { item -> item.id }) { product ->

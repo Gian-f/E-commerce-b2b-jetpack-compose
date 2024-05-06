@@ -9,14 +9,10 @@ import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.repository.CartItemRepository
 import com.br.b2b.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -53,9 +49,6 @@ class StoreViewModel @Inject constructor(
     private val _searchHistory = MutableStateFlow(emptyList<String>())
     val searchHistory: Flow<List<String>> = _searchHistory
 
-    private val _productQuantityInCart = MutableStateFlow(0)
-    val productQuantityInCart: StateFlow<Int> = _productQuantityInCart
-
     init {
         getSearchHistory()
     }
@@ -64,39 +57,12 @@ class StoreViewModel @Inject constructor(
         _query.value = newQuery
     }
 
-
-    fun getProductQuantityInCart(productId: Int) {
-        viewModelScope.launch {
-            val quantity = cartItemRepository.getProductQuantityInCart(productId).first()
-            _productQuantityInCart.value = quantity
-        }
-    }
-
-    @OptIn(FlowPreview::class)
-    fun updateCartItemQuantity(productId: Int, newQuantityFlow: Flow<Int>) {
-        newQuantityFlow
-            .debounce(300)
-            .onEach { newQuantity ->
-                viewModelScope.launch {
-                    if (newQuantity <= 0) {
-                        // Remover o item do carrinho
-                        removeProductFromCart(productId)
-                    } else {
-                        // Atualizar a quantidade do item no carrinho
-                        cartItemRepository.updateCartItemQuantity(productId, newQuantity)
-                    }
-                }
-            }
-            .launchIn(viewModelScope)
-    }
-
     fun findProducts(term: String) {
         viewModelScope.launch {
             runCatching {
                 repository.findProducts(term)
             }.onSuccess {
                 _filteredProducts.value = it.getOrThrow().filterNotNull()
-                println(_filteredProducts.value)
             }.onFailure {
                 _errorMessage.value = it.message.orEmpty()
             }
@@ -131,7 +97,6 @@ class StoreViewModel @Inject constructor(
     fun addProductToCart(
         product: Product,
         quantity: Int = 1,
-        onSuccess: () -> Unit,
     ) {
         viewModelScope.launch {
             cartItemRepository.addToCart(
@@ -155,12 +120,9 @@ class StoreViewModel @Inject constructor(
                 )
             )
         }
-        onSuccess.invoke()
     }
 
-    fun removeProductFromCart(
-        productId: Int,
-    ) {
+    fun removeProductFromCart(productId: Int) {
         viewModelScope.launch {
             cartItemRepository.removeProductFromCart(productId)
         }

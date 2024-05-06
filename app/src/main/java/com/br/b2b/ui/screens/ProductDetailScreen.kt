@@ -1,7 +1,15 @@
 package com.br.b2b.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddShoppingCart
@@ -22,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,16 +50,18 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
 import com.br.b2b.domain.model.Product
-import com.br.b2b.domain.routes.Screen
+import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.util.FormatCurrency
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 
 const val appBarTitle = "Detalhes"
 const val appBarTitleFontSize = 18.0f
@@ -61,85 +72,103 @@ const val deliveryInfoFontSize = 12.0f
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
-    navController: NavController, storeViewModel: StoreViewModel, productId: Int?
+    cartItemViewModel: CartItemViewModel,
+    storeViewModel: StoreViewModel,
+    productId: Int?,
+    onBackPress: () -> Unit,
+    onNavigate: () -> Unit
 ) {
     val product by storeViewModel.foundProduct.collectAsStateWithLifecycle()
-    val productQuantityInCart by storeViewModel.productQuantityInCart.collectAsStateWithLifecycle()
+    val foundedCartItem by cartItemViewModel.foundedCartItem.collectAsStateWithLifecycle()
+    var quantity by remember { mutableIntStateOf(0) }
     var isFavorited by rememberSaveable { mutableStateOf(product?.isFavorited ?: false) }
-    val productQuantityInCartFlow = remember { MutableStateFlow(productQuantityInCart) }
-
-    LaunchedEffect(productQuantityInCart) {
-        productQuantityInCartFlow.value = productQuantityInCart
-    }
-    LaunchedEffect(product) {
-        product?.let {
-            isFavorited = it.isFavorited
-            storeViewModel.getProductQuantityInCart(it.id)
-        }
-    }
 
     LaunchedEffect(Unit) {
+        cartItemViewModel.getAllItemsFromCart()
         storeViewModel.findProductById(productId ?: 0)
     }
 
-    Scaffold(topBar = {
-        CenterAlignedTopAppBar(title = {
-            Text(
-                text = appBarTitle,
-                fontSize = TextUnit(appBarTitleFontSize, TextUnitType.Sp)
-            )
-        }, actions = {
-            IconButton(onClick = {
-                isFavorited = !isFavorited
-                productId?.let { id ->
-                    storeViewModel.toggleFavoriteStatus(id)
-                }
-            }) {
-                Icon(
-                    imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    tint = if (isFavorited) Color.Red else Color.Black,
-                    contentDescription = "Favorite"
-                )
-            }
-        }, navigationIcon = {
-            IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "Voltar"
-                )
-            }
-        })
-    }, content = { innerPadding ->
-        ProductDetailContent(product, Modifier.padding(innerPadding))
-    }, bottomBar = {
-        if (productQuantityInCart == 0) {
-            AddToCartButton(onClick = {
-                product?.let {
-                    storeViewModel.addProductToCart(product = it, onSuccess = {
-                        storeViewModel.getProductQuantityInCart(it.id)
-                    })
-                }
-            })
-        } else {
-            QuantitySelector(
-                storeViewModel,
-                navController,
-                product = product,
-                quantity = productQuantityInCart,
-                onQuantityChange = { newQuantity ->
-                    product?.let {
-                        val quantityFlow = flowOf(newQuantity)
-                        storeViewModel.updateCartItemQuantity(it.id, quantityFlow)
+    LaunchedEffect(foundedCartItem) {
+        cartItemViewModel.findCartItemsById(productId?: 0)
+        quantity = foundedCartItem?.quantity?: 0
+    }
+
+    LaunchedEffect(product) {
+        product?.let {
+            isFavorited = it.isFavorited
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = appBarTitle,
+                        fontSize = TextUnit(appBarTitleFontSize, TextUnitType.Sp)
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            isFavorited = !isFavorited
+                            productId?.let { id ->
+                                storeViewModel.toggleFavoriteStatus(id)
+                            }
+                        }) {
+                        Icon(
+                            imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            tint = if (isFavorited) Color.Red else Color.Black,
+                            contentDescription = "Favorite"
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { onBackPress.invoke() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBackIosNew,
+                            contentDescription = "Voltar"
+                        )
                     }
                 }
             )
+        },
+        content = { innerPadding ->
+            ProductDetailContent(product, Modifier.padding(innerPadding))
+        },
+        bottomBar = {
+            if (quantity == 0) {
+                AddToCartButton(
+                    onClick = {
+                        quantity++
+                        product?.let {
+                            storeViewModel.addProductToCart(it)
+                        }
+                    }
+                )
+            } else {
+                QuantitySelector(
+                    cartItemViewModel = cartItemViewModel,
+                    product = product,
+                    quantity = quantity,
+                    onNavigate = { onNavigate.invoke() }
+                ) { newQuantity ->
+                    quantity = newQuantity
+                    if (newQuantity == 0) {
+                        product?.let {
+                            storeViewModel.removeProductFromCart(it.id)
+                        }
+                    }
+                }
+            }
         }
-    })
+    )
 }
 
 @Composable
 fun ProductDetailContent(
-    product: Product?, modifier: Modifier = Modifier
+    product: Product?,
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.align(Alignment.TopCenter)) {
@@ -153,7 +182,8 @@ fun ProductDetailContent(
 @Composable
 fun AddToCartButton(onClick: () -> Unit) {
     Button(
-        onClick = onClick, modifier = Modifier
+        onClick = onClick,
+        modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
@@ -240,15 +270,17 @@ fun ProductInfo(product: Product?) {
 }
 
 
+@OptIn(FlowPreview::class)
 @Composable
 fun QuantitySelector(
-    storeViewModel: StoreViewModel,
-    navController: NavController,
+    cartItemViewModel: CartItemViewModel,
     product: Product?,
     quantity: Int,
+    onNavigate: () -> Unit,
     onQuantityChange: (Int) -> Unit
 ) {
     val totalPrice = product?.price?.times(quantity) ?: 0.0
+
     val formattedTotalPrice = buildAnnotatedString {
         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp)) {
             append(FormatCurrency(totalPrice))
@@ -258,20 +290,18 @@ fun QuantitySelector(
             append("$quantity item(s)")
         }
     }
-    val quantityFlow = remember { MutableStateFlow(quantity) }
 
-    // Atualiza o MutableStateFlow sempre que a quantidade muda
-    LaunchedEffect(quantity) {
-        quantityFlow.value = quantity
+    val debounce = remember {
+        MutableStateFlow(quantity)
     }
 
-    // Chama a função modificada com o Flow de quantidades
-    LaunchedEffect(product?.id) {
-        product?.id?.let { productId ->
-            storeViewModel.updateCartItemQuantity(productId, quantityFlow)
-        }
+    LaunchedEffect(debounce) {
+        debounce.debounce(500).map { newQuantity ->
+            product?.let {
+                cartItemViewModel.updateCartItemQuantity(product.id, newQuantity)
+            }
+        }.collect()
     }
-
 
     HorizontalDivider(color = Color.LightGray)
 
@@ -284,7 +314,8 @@ fun QuantitySelector(
     ) {
 
         Text(
-            text = formattedTotalPrice, fontWeight = FontWeight.Bold
+            text = formattedTotalPrice,
+            fontWeight = FontWeight.Bold
         )
 
         Row(
@@ -294,14 +325,21 @@ fun QuantitySelector(
             IconButton(
                 onClick = {
                     onQuantityChange(quantity - 1)
-                }) {
+                    debounce.value = quantity - 1
+                }
+            ) {
                 Icon(Icons.Filled.Remove, contentDescription = "Diminuir quantidade")
             }
             Text(text = quantity.toString(), fontWeight = FontWeight.Bold)
-            IconButton(onClick = { onQuantityChange(quantity + 1) }) {
+            IconButton(
+                onClick = {
+                    onQuantityChange(quantity + 1)
+                    debounce.value = quantity + 1
+                }
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "Aumentar quantidade")
             }
-            Button(onClick = { navController.navigate(Screen.CartItem.route) }) {
+            Button(onClick = { onNavigate.invoke() }) {
                 Icon(imageVector = Icons.Filled.ShoppingCart, contentDescription = "")
             }
         }

@@ -43,7 +43,7 @@ interface CartItemDao {
     suspend fun updateCartItemQuantity(productId: Int, newQuantity: Int)
 
     @Query("SELECT COUNT(*) FROM cart_items WHERE productId = :productId")
-    fun getProductQuantityInCart(productId: Int): Flow<Int>
+    fun getProductQuantityInCart(productId: Int): Int
 
     @Query("DELETE FROM cart_items")
     suspend fun clearCart()
