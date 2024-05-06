@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("androidx.baselineprofile")
 }
 
 android {
@@ -15,6 +16,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        resourceConfigurations.addAll(listOf("en", "pt"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -66,11 +68,14 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.compose.ui:ui")
+    implementation("com.google.errorprone:error_prone_annotations:2.18.0")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("com.google.dagger:hilt-android:2.49")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    "baselineProfile"(project(":app:baselineprofile"))
     ksp("com.google.dagger:hilt-android-compiler:2.49")
 
     implementation("androidx.compose.material:material-icons-extended")
@@ -79,13 +84,14 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.airbnb.android:lottie-compose:6.0.1")
 
-    // system UI Controller
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.28.0")
+    // Key/value
+    implementation("androidx.datastore:datastore-preferences:1.1.0")
 
     // Room Database
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-paging:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
 
     //Lifecycle

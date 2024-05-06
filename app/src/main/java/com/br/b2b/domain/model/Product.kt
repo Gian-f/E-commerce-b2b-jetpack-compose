@@ -1,20 +1,30 @@
 package com.br.b2b.domain.model
 
-import androidx.compose.runtime.Immutable
-import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.br.b2b.data.local.converter.ImageListConverter
 
-@Immutable
-@Entity(tableName = "products")
+@Entity(
+    tableName = "products",
+    foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["id"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["categoryId"])]
+)
 data class Product(
     @PrimaryKey val id: Int,
     val title: String,
     val description: String,
     val price: Double,
-    @ColumnInfo(name = "categoryId") val categoryId: Int,
     @TypeConverters(ImageListConverter::class) val images: List<String>,
-    var isFavorited: Boolean = false
+    var isFavorited: Boolean = false,
+    val categoryId: Int
 )

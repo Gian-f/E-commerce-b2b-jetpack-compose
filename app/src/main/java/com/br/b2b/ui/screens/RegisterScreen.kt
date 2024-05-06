@@ -2,6 +2,7 @@ package com.br.b2b.ui.screens
 
 import ButtonComponent
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.br.b2b.domain.routes.OnBackPress
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.viewmodel.SignUpViewModel
 import com.br.b2b.ui.widgets.dialogs.ShowErrorSheet
@@ -58,7 +58,7 @@ fun RegisterScreen(
     val isLoadingState = signUpViewModel.isLoading.collectAsStateWithLifecycle()
     val isErrorState = remember { mutableStateOf(false) }
 
-    OnBackPress {
+    BackHandler {
         navController.navigate(Screen.Login.route)
         scope.launch {
             signUpViewModel.clearForm()

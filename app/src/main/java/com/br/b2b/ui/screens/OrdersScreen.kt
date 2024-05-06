@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material3.CardDefaults.elevatedShape
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -60,7 +61,7 @@ fun OrdersScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBackIos,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
                             contentDescription = "Comeback"
                         )
                     }

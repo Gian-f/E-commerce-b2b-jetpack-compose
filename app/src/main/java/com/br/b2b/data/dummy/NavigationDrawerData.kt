@@ -47,12 +47,12 @@ object NavigationDrawerData {
             unselectedIcon = Icons.Outlined.Newspaper,
             badgeCount = 10
         ),
-        NavigationDrawerItem(
+/*        NavigationDrawerItem(
             title = Screen.Client.title,
             route = Screen.Client.route,
             selectedIcon = Icons.Filled.Person,
             unselectedIcon = Icons.Outlined.Person,
-        ),
+        ),*/
         NavigationDrawerItem(
             title = Screen.Orders.title,
             route = Screen.Orders.route,

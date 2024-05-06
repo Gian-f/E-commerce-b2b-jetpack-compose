@@ -17,4 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "jetpackTest"
 include(":app")
- 
+include(":app:baselineprofile")

@@ -28,13 +28,15 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -63,7 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,42 +73,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.br.b2b.domain.model.CardType
+import com.br.b2b.ui.viewmodel.StoreViewModel
+import com.br.jetpacktest.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-@Composable
-fun CustomDivider(middleText: String) {
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Divider(
-            modifier = Modifier.align(Alignment.Center),
-            color = Color.LightGray,
-            thickness = 1.dp
-        )
-        Text(
-            text = middleText,
-            modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .background(Color.White)
-                .align(Alignment.Center),
-            style = TextStyle(
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ElevatedFilterChip(
     label: String,
@@ -174,14 +149,28 @@ fun FilterButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 
 @Composable
-fun HistoryItem(name: String) {
-    Row(modifier = Modifier.padding(14.dp)) {
+fun HistoryItem(
+    name: String,
+    storeViewModel: StoreViewModel
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(14.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable {
+                storeViewModel.setQuery(name)
+                storeViewModel.findProducts(name)
+                storeViewModel.toggleSearchBar()
+            }
+    ) {
         Icon(
-            modifier = Modifier.padding(end = 10.dp),
-            imageVector = Icons.Default.History,
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_history),
             contentDescription = "History"
         )
-        Text(text = name)
+        Text(text = name, Modifier.padding(8.dp))
     }
 }
 

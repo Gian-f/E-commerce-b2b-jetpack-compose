@@ -6,8 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.br.b2b.data.local.converter.ImageListConverter
+import com.br.b2b.data.local.dao.CartItemDao
 import com.br.b2b.data.local.dao.CategoryDao
 import com.br.b2b.data.local.dao.ProductDao
+import com.br.b2b.domain.model.CartItem
 import com.br.b2b.domain.model.Category
 import com.br.b2b.domain.model.Product
 
@@ -15,6 +17,7 @@ import com.br.b2b.domain.model.Product
     entities = [
         Product::class,
         Category::class,
+        CartItem::class
     ],
     version = 1, exportSchema = false
 )
@@ -22,6 +25,7 @@ import com.br.b2b.domain.model.Product
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun productDao(): ProductDao
+    abstract fun cartItemDao(): CartItemDao
 
     abstract fun categoryDao(): CategoryDao
 

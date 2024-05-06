@@ -3,9 +3,7 @@ package com.br.b2b.ui.screens
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,25 +20,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.viewmodel.LoginViewModel
 import com.br.jetpacktest.R
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
@@ -51,12 +48,17 @@ fun SplashScreen(
     val context = LocalContext.current as Activity
     val splashKey = remember { UUID.randomUUID().toString() }
     val isLoginVisible = remember { mutableStateOf(false) }
+    val token by loginViewModel.token.collectAsStateWithLifecycle()
     context.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
     LaunchedEffect(splashKey) {
         isLoginVisible.value = true
         delay(2000)
-        navController.navigate(Screen.Login.route)
+        if (token.isNullOrEmpty()) {
+            navController.navigate(Screen.Login.route)
+        } else {
+            navController.navigate(Screen.Products.route)
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {

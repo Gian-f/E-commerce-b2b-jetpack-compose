@@ -3,12 +3,9 @@ package com.br.b2b.domain.repository
 import com.br.b2b.data.local.converter.convertProduct
 import com.br.b2b.data.local.dao.CategoryDao
 import com.br.b2b.data.local.dao.ProductDao
-import com.br.b2b.data.remote.dto.response.CategoryResponse
-import com.br.b2b.data.remote.dto.response.ProductResponse
 import com.br.b2b.data.remote.service.ApiService
 import com.br.b2b.domain.model.Category
 import com.br.b2b.domain.model.Product
-import com.br.b2b.domain.model.ProductData
 import javax.inject.Inject
 
 class StoreRepositoryImpl
@@ -18,93 +15,84 @@ class StoreRepositoryImpl
     private val categoryDao: CategoryDao
 ) : StoreRepository {
 
-    override suspend fun fetchAllProducts(): Result<ProductResponse?> {
+    override suspend fun fetchAllProducts(): Result<List<Product>> {
+        val localProducts = productDao.getAllProducts()
+        if (localProducts.isNotEmpty()) {
+            return Result.success(localProducts)
+        }
         return runCatching {
             val response = service.fetchAllProducts()
             if (response.isSuccessful) {
-                val productResponse = response.body()
-                if (productResponse != null) {
-                    val products = convertProduct(productResponse.result)
-                    createProducts(products)
-                    productResponse
-                } else {
-                    throw Exception("Erro ao trazer produtos: Resposta vazia")
-                }
+                val products = convertProduct(response.body()?.result ?: emptyList())
+                products
             } else {
                 throw Exception("Erro ao trazer produtos: ${response.message()}")
             }
         }
     }
 
-    override suspend fun fetchAllCategories(): Result<CategoryResponse?> {
+    override suspend fun fetchAllCategories(): Result<List<Category>> {
+        val localCategories = categoryDao.getAllCategories()
+        if (localCategories.isNotEmpty()) {
+            return Result.success(localCategories)
+        }
+
         return runCatching {
             val response = service.fetchAllCategories()
             if (response.isSuccessful) {
-                createCategories(response.body()?.result ?: emptyList())
-                response.body()
+                response.body()?.result ?: emptyList()
             } else {
                 throw Exception("Erro ao trazer categorias: ${response.message()}")
             }
         }
     }
 
-    override suspend fun findProductById(id: Int): Result<Product> {
+    override suspend fun findProductById(id: Int): Result<Product?> {
         return runCatching {
-            val product = productDao.findById(id)
-            if (product != null) {
-                product
-            } else {
-                throw Exception("Produto não encontrado")
-            }
+            productDao.findById(id)
         }
     }
 
-    override suspend fun createProduct(product: Product?): Result<Unit> {
+    override suspend fun findProducts(term: String): Result<List<Product?>> {
         return runCatching {
-            if (product != null) {
-                productDao.createProduct(product)
-            } else {
-                throw Exception("Produto nulo não pode ser criado")
-            }
-        }.onFailure { e ->
-            println(e)
+            productDao.findProducts("%${term}%")
+        }
+    }
+
+    override suspend fun createProduct(product: Product): Result<Unit> {
+        return runCatching {
+            productDao.createProduct(product)
         }
     }
 
     override suspend fun createProducts(products: List<Product>): Result<Unit> {
         return runCatching {
-            if (products.isNotEmpty()) {
-                productDao.createProducts(*products.toTypedArray())
-            } else {
-                throw Exception("Lista de produtos vazia não pode ser criada")
-            }
-        }.onFailure { e ->
-            println(e)
+            productDao.createProducts(*products.toTypedArray())
         }
     }
 
-
-    override suspend fun createCategory(category: Category?): Result<Unit> {
+    override suspend fun createCategory(category: Category): Result<Unit> {
         return runCatching {
-            if (category != null) {
-                categoryDao.createCategory(category)
-            } else {
-                throw Exception("Categoria nula não pode ser criado")
-            }
-        }.onFailure { e ->
-            println(e)
+            categoryDao.createCategory(category)
         }
     }
 
     override suspend fun createCategories(categories: List<Category>): Result<Unit> {
         return runCatching {
-            if (categories.isNotEmpty()) {
-                categoryDao.createCategories(*categories.toTypedArray())
-            } else {
-                throw Exception("Lista de categorias vazia não pode ser criada")
-            }
-        }.onFailure { e ->
-            println(e)
+            categoryDao.createCategories(*categories.toTypedArray())
+        }
+    }
+
+    override suspend fun getProductsInCategory(categoryId: Int): Result<List<Product>> {
+        return runCatching {
+            productDao.getProductsByCategory(categoryId)
+        }
+    }
+
+    override suspend fun toggleFavoriteStatus(productId: Int): Result<Unit> {
+        return runCatching {
+            val product = productDao.findById(productId)
+            productDao.updateFavoriteStatus(productId, !product.isFavorited)
         }
     }
 }

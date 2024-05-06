@@ -1,5 +1,6 @@
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -50,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -59,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.br.b2b.domain.routes.OnBackPress
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.viewmodel.LoginViewModel
 import com.br.b2b.ui.widgets.dialogs.ShowErrorSheet
@@ -82,7 +83,7 @@ fun LoginScreen(
     val loginTouched = remember { mutableStateOf(false) }
     val passwordTouched = remember { mutableStateOf(false) }
 
-    OnBackPress {
+    BackHandler(enabled = true) {
         context.finish()
     }
 
@@ -156,7 +157,7 @@ fun LoginScreen(
                 placeholder = "Senha",
                 error = if (passwordTouched.value && password.isEmpty()) "A senha não pode ser vazia!" else null,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                         Icon(
@@ -193,6 +194,7 @@ fun LoginScreen(
                 ButtonComponent("Entrar", isLoading = isLoginLoading) {
                     viewModel.authenticateUser(
                         onSuccess = {
+                            viewModel.saveToken(it)
                             navController.navigate(Screen.Products.route)
                         },
                         onFailure = {
