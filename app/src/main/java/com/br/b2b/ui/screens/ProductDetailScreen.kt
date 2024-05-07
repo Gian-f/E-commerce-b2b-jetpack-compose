@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddShoppingCart
@@ -89,8 +90,8 @@ fun ProductDetailScreen(
     }
 
     LaunchedEffect(foundedCartItem) {
-        cartItemViewModel.findCartItemsById(productId?: 0)
-        quantity = foundedCartItem?.quantity?: 0
+        cartItemViewModel.findCartItemsById(productId ?: 0)
+        quantity = foundedCartItem?.quantity ?: 0
     }
 
     LaunchedEffect(product) {
@@ -339,7 +340,9 @@ fun QuantitySelector(
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Aumentar quantidade")
             }
-            Button(onClick = { onNavigate.invoke() }) {
+            Button(
+                shape = RoundedCornerShape(10.dp),
+                onClick = { onNavigate.invoke() }) {
                 Icon(imageVector = Icons.Filled.ShoppingCart, contentDescription = "")
             }
         }

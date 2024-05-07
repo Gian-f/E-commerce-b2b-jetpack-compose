@@ -9,7 +9,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,52 +18,21 @@ class CartItemViewModel @Inject constructor(
     private val repository: CartItemRepository
 ) : ViewModel() {
 
-    private val addToCartFlow = MutableSharedFlow<CartItem>()
-    private val removeFromCartFlow = MutableSharedFlow<Int>()
-    private val updateCartItemFlow = MutableSharedFlow<CartItem>()
-    private val clearCartFlow = MutableSharedFlow<Unit>()
-
     private val _cartItems = MutableStateFlow(emptyList<CartItem>())
     val cartItems: StateFlow<List<CartItem>> = _cartItems
 
     private val _foundedCartItem = MutableStateFlow<CartItem?>(null)
     val foundedCartItem: StateFlow<CartItem?> = _foundedCartItem
 
-    init {
-        viewModelScope.launch {
-            addToCartFlow.debounce(1000).collect { cartItem ->
-                repository.addToCart(cartItem)
-            }
-        }
-
-        viewModelScope.launch {
-            removeFromCartFlow.debounce(1000).collect { productId ->
-                repository.removeFromCartByProductId(productId)
-            }
-        }
-
-        viewModelScope.launch {
-            updateCartItemFlow.debounce(1000).collect { cartItem ->
-                repository.updateCartItem(cartItem)
-            }
-        }
-
-        viewModelScope.launch {
-            clearCartFlow.debounce(1000).collect {
-                repository.clearCart()
-            }
-        }
-    }
-
     fun addToCart(cartItem: CartItem) {
         viewModelScope.launch {
-            addToCartFlow.emit(cartItem)
+            repository.addToCart(cartItem)
         }
     }
 
     fun removeFromCart(productId: Int) {
         viewModelScope.launch {
-            removeFromCartFlow.emit(productId)
+            repository.removeFromCartByProductId(productId)
         }
     }
 
@@ -90,7 +58,7 @@ class CartItemViewModel @Inject constructor(
 
     fun updateCartItem(cartItem: CartItem) {
         viewModelScope.launch {
-            updateCartItemFlow.emit(cartItem)
+            repository.updateCartItem(cartItem)
         }
     }
 
@@ -102,7 +70,7 @@ class CartItemViewModel @Inject constructor(
 
     fun clearCart() {
         viewModelScope.launch {
-            clearCartFlow.emit(Unit)
+            repository.clearCart()
         }
     }
 }

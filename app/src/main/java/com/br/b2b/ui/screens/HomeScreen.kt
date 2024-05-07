@@ -585,7 +585,7 @@ private fun TopAppBarActions(navController: NavHostController) {
                 contentDescription = "Notifications"
             )
         }
-        IconButton(onClick = { }) {
+        IconButton(onClick = { navController.navigate(Screen.CartItem.route) }) {
             Icon(
                 imageVector = Icons.Outlined.ShoppingCart,
                 modifier = Modifier.size(24.dp),

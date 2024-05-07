@@ -1,5 +1,6 @@
 package com.br.b2b.domain.model
 
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -18,6 +19,7 @@ import androidx.room.PrimaryKey
     ],
     indices = [Index(value = ["productId"])]
 )
+@Immutable
 data class CartItem(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "productId") val productId: Int,

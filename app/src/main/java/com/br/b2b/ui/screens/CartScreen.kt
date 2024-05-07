@@ -1,7 +1,9 @@
 package com.br.b2b.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,12 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
@@ -32,12 +38,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +56,11 @@ import com.br.b2b.domain.model.CartItem
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.util.FormatCurrency
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,9 +71,15 @@ fun CartScreen(
     val openDialog = remember { mutableStateOf(false) }
     var total by remember { mutableDoubleStateOf(0.0) }
     val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
+    var cartItemsQuantity by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
+        cartViewModel.getAllItemsFromCart()
+    }
+
+    LaunchedEffect(cartItems) {
         total = cartItems.sumOf { it.totalPrice }
+        cartItemsQuantity = cartItems.sumOf { it.quantity }
     }
 
     Scaffold(
@@ -107,16 +124,8 @@ fun CartScreen(
                     }
                 ) { cartItem ->
                     CartItemRow(
+                        cartViewModel = cartViewModel,
                         item = cartItem,
-                        onQuantityChange = { newQuantity ->
-                            cartViewModel.updateCartItemQuantity(
-                                cartItem.productId,
-                                newQuantity
-                            )
-                        },
-                        onRemoveItem = { productId ->
-                            cartViewModel.removeFromCart(productId)
-                        }
                     )
                 }
             }
@@ -127,11 +136,11 @@ fun CartScreen(
             }
         },
         bottomBar = {
-            HorizontalDivider()
+            HorizontalDivider(color = Color.LightGray)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
@@ -142,8 +151,29 @@ fun CartScreen(
                     )
                     Text(text = FormatCurrency(total))
                 }
-                Button(onClick = { /*TODO*/ }) {
-                    Text("Finalizar")
+                Button(
+                    modifier = Modifier.width(150.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    onClick = { /*TODO*/ }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Finalizar")
+                        Box(
+                            modifier = Modifier
+                                .padding(3.dp)
+                                .background(Color.White, CircleShape)
+                        ) {
+                            Text(
+                                text = "$cartItemsQuantity",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -161,24 +191,22 @@ fun CartScreen(
 
 @Composable
 fun CartItemRow(
-    item: CartItem,
-    onQuantityChange: (Int) -> Unit,
-    onRemoveItem: (Int) -> Unit
+    cartViewModel: CartItemViewModel,
+    item: CartItem
 ) {
+    var quantity by remember { mutableIntStateOf(0) }
+
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
         androidx.compose.material3.Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .padding(start = 22.dp, end = 22.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .width(120.dp)
+                .height(80.dp)
+                .padding(start = 4.dp, end = 22.dp)
                 .clickable { },
             elevation = CardDefaults.cardElevation(3.dp),
             shape = RoundedCornerShape(10.dp)
@@ -199,20 +227,86 @@ fun CartItemRow(
             )
         }
 
-        Column {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             Text(
                 text = item.productTitle,
-                style = MaterialTheme.typography.bodyLarge
+                maxLines = 1,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
             )
-            Text(
-                text = "Quantidade: ${item.quantity}",
-                style = MaterialTheme.typography.bodyMedium
+            QuantitySelector(
+                cartItemViewModel = cartViewModel,
+                cartItem = item,
+                quantity = quantity,
+                onQuantityChange = { newQuantity ->
+                    quantity = newQuantity
+                    if (newQuantity == 0) {
+                        cartViewModel.removeFromCart(item.id)
+                    }
+                }
             )
             Text(
                 text = FormatCurrency(item.unitPrice),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+    }
+}
+
+@OptIn(FlowPreview::class)
+@Composable
+fun QuantitySelector(
+    cartItemViewModel: CartItemViewModel,
+    cartItem: CartItem,
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit
+) {
+
+    val debounce = remember {
+        MutableStateFlow(quantity)
+    }
+
+    LaunchedEffect(debounce) {
+        debounce.debounce(500).map { newQuantity ->
+            cartItemViewModel.updateCartItemQuantity(cartItem.id, newQuantity)
+        }.collect()
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        IconButton(
+            onClick = {
+                onQuantityChange(quantity - 1)
+                debounce.value = quantity - 1
+            }
+        ) {
+            Icon(
+                Icons.Filled.Remove,
+                contentDescription = "Diminuir quantidade",
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Text(
+            text = cartItem.quantity.toString(),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+        IconButton(
+            onClick = {
+                onQuantityChange(quantity + 1)
+                debounce.value = quantity + 1
+            }
+        ) {
+            Icon(
+                Icons.Filled.Add, contentDescription = "Aumentar quantidade",
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
