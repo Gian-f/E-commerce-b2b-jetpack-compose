@@ -45,6 +45,9 @@ interface CartItemDao {
     @Query("SELECT COUNT(*) FROM cart_items WHERE productId = :productId")
     fun getProductQuantityInCart(productId: Int): Int
 
+    @Query("SELECT SUM(unitPrice * quantity) FROM cart_items")
+    fun calculateTotal(): Double
+
     @Query("DELETE FROM cart_items")
     suspend fun clearCart()
 }

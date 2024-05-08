@@ -58,11 +58,6 @@ import com.br.b2b.domain.model.Product
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.util.FormatCurrency
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 
 const val appBarTitle = "Detalhes"
 const val appBarTitleFontSize = 18.0f
@@ -271,7 +266,6 @@ fun ProductInfo(product: Product?) {
 }
 
 
-@OptIn(FlowPreview::class)
 @Composable
 fun QuantitySelector(
     cartItemViewModel: CartItemViewModel,
@@ -290,18 +284,6 @@ fun QuantitySelector(
         withStyle(style = SpanStyle(fontWeight = FontWeight.Normal, fontSize = 10.sp)) {
             append("$quantity item(s)")
         }
-    }
-
-    val debounce = remember {
-        MutableStateFlow(quantity)
-    }
-
-    LaunchedEffect(debounce) {
-        debounce.debounce(500).map { newQuantity ->
-            product?.let {
-                cartItemViewModel.updateCartItemQuantity(product.id, newQuantity)
-            }
-        }.collect()
     }
 
     HorizontalDivider(color = Color.LightGray)
@@ -326,7 +308,7 @@ fun QuantitySelector(
             IconButton(
                 onClick = {
                     onQuantityChange(quantity - 1)
-                    debounce.value = quantity - 1
+                    cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity - 1)
                 }
             ) {
                 Icon(Icons.Filled.Remove, contentDescription = "Diminuir quantidade")
@@ -335,7 +317,7 @@ fun QuantitySelector(
             IconButton(
                 onClick = {
                     onQuantityChange(quantity + 1)
-                    debounce.value = quantity + 1
+                    cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity + 1)
                 }
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Aumentar quantidade")

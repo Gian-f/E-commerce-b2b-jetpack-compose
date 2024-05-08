@@ -15,5 +15,6 @@ interface CartItemRepository {
     suspend fun updateCartItemQuantity(productId: Int, newQuantity: Int)
     suspend fun getProductQuantityInCart(productId: Int): Int
     suspend fun removeProductFromCart(productId: Int)
+    suspend fun calculateTotal() : Double
     suspend fun clearCart()
 }

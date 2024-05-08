@@ -46,7 +46,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,11 +60,6 @@ import com.br.b2b.domain.model.CartItem
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.util.FormatCurrency
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +68,7 @@ fun CartScreen(
     cartViewModel: CartItemViewModel
 ) {
     val openDialog = remember { mutableStateOf(false) }
-    var total by remember { mutableDoubleStateOf(0.0) }
+    val total by cartViewModel.total.collectAsStateWithLifecycle()
     val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
     var cartItemsQuantity by remember { mutableIntStateOf(0) }
 
@@ -78,7 +77,6 @@ fun CartScreen(
     }
 
     LaunchedEffect(cartItems) {
-        total = cartItems.sumOf { it.totalPrice }
         cartItemsQuantity = cartItems.sumOf { it.quantity }
     }
 
@@ -107,33 +105,44 @@ fun CartScreen(
             )
         },
         content = {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                items(
-                    items = cartItems,
-                    key = { cartItem ->
-                        cartItem.id
-                    },
-                    contentType = { cartItem ->
-                        cartItem.id
-                    }
-                ) { cartItem ->
-                    CartItemRow(
-                        cartViewModel = cartViewModel,
-                        item = cartItem,
+            if (cartItems.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it)
+                ) {
+                    Text(
+                        text = "Nenhum produto foi encontrado.",
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 4.dp)
                     )
                 }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    items(
+                        items = cartItems,
+                        key = { cartItem ->
+                            cartItem.id
+                        },
+                        contentType = { cartItem ->
+                            cartItem.id
+                        }
+                    ) { cartItem ->
+                        CartItemRow(
+                            cartViewModel = cartViewModel,
+                            item = cartItem,
+                        )
+                    }
+                }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { cartViewModel.clearCart() }) {
-                Text("Limpar Carrinho")
-            }
         },
         bottomBar = {
             HorizontalDivider(color = Color.LightGray)
@@ -163,7 +172,7 @@ fun CartScreen(
                         Text("Finalizar")
                         Box(
                             modifier = Modifier
-                                .padding(3.dp)
+                                .padding(5.dp)
                                 .background(Color.White, CircleShape)
                         ) {
                             Text(
@@ -181,6 +190,7 @@ fun CartScreen(
 
     ConfirmDialog(
         onConfirm = {
+            cartViewModel.clearCart()
 
         },
         dialogState = openDialog,
@@ -194,7 +204,7 @@ fun CartItemRow(
     cartViewModel: CartItemViewModel,
     item: CartItem
 ) {
-    var quantity by remember { mutableIntStateOf(0) }
+    var quantity by remember { mutableIntStateOf(item.quantity) }
 
     Row(
         modifier = Modifier
@@ -241,23 +251,21 @@ fun CartItemRow(
                 cartItemViewModel = cartViewModel,
                 cartItem = item,
                 quantity = quantity,
-                onQuantityChange = { newQuantity ->
-                    quantity = newQuantity
-                    if (newQuantity == 0) {
-                        cartViewModel.removeFromCart(item.id)
-                    }
+            ) { newQuantity ->
+                quantity = newQuantity
+                if (newQuantity == 0) {
+                    cartViewModel.removeFromCart(
+                        item.productId,
+                        onComplete = {
+                            cartViewModel.getAllItemsFromCart()
+                        }
+                    )
                 }
-            )
-            Text(
-                text = FormatCurrency(item.unitPrice),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
+            }
         }
     }
 }
 
-@OptIn(FlowPreview::class)
 @Composable
 fun QuantitySelector(
     cartItemViewModel: CartItemViewModel,
@@ -265,48 +273,59 @@ fun QuantitySelector(
     quantity: Int,
     onQuantityChange: (Int) -> Unit
 ) {
+    val totalPrice = cartItem.unitPrice.times(quantity)
 
-    val debounce = remember {
-        MutableStateFlow(quantity)
+    val formattedTotalPrice = buildAnnotatedString {
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 14.sp)) {
+            append(FormatCurrency(totalPrice))
+        }
+        append("/")
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Normal, fontSize = 10.sp)) {
+            append("$quantity item(s)")
+        }
     }
 
-    LaunchedEffect(debounce) {
-        debounce.debounce(500).map { newQuantity ->
-            cartItemViewModel.updateCartItemQuantity(cartItem.id, newQuantity)
-        }.collect()
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
     ) {
-        IconButton(
-            onClick = {
-                onQuantityChange(quantity - 1)
-                debounce.value = quantity - 1
-            }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Icon(
-                Icons.Filled.Remove,
-                contentDescription = "Diminuir quantidade",
-                modifier = Modifier.size(20.dp)
+            IconButton(
+                onClick = {
+                    onQuantityChange(quantity - 1)
+                    cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity - 1)
+                }
+            ) {
+                Icon(
+                    Icons.Filled.Remove,
+                    contentDescription = "Diminuir quantidade",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = quantity.toString(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
             )
+            IconButton(
+                onClick = {
+                    onQuantityChange(quantity + 1)
+                    cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity + 1)
+                }
+            ) {
+                Icon(
+                    Icons.Filled.Add, contentDescription = "Aumentar quantidade",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         Text(
-            text = cartItem.quantity.toString(),
-            fontSize = 12.sp,
+            text = formattedTotalPrice,
             fontWeight = FontWeight.Bold
         )
-        IconButton(
-            onClick = {
-                onQuantityChange(quantity + 1)
-                debounce.value = quantity + 1
-            }
-        ) {
-            Icon(
-                Icons.Filled.Add, contentDescription = "Aumentar quantidade",
-                modifier = Modifier.size(20.dp)
-            )
-        }
     }
 }

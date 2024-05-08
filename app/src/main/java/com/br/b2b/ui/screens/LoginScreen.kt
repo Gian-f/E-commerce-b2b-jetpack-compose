@@ -157,7 +157,10 @@ fun LoginScreen(
                 placeholder = "Senha",
                 error = if (passwordTouched.value && password.isEmpty()) "A senha não pode ser vazia!" else null,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                         Icon(
@@ -317,11 +320,17 @@ fun ButtonComponent(
             contentAlignment = Alignment.Center
         ) {
             if (isLoading) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    strokeWidth = 1.dp,
-                    modifier = Modifier.size(14.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text("Aguarde...", color = Color.White, fontSize = 10.sp)
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 1.dp,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             } else {
                 Text(
                     text = value,
