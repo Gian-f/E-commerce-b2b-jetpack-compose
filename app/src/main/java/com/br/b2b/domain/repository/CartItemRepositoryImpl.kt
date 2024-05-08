@@ -57,6 +57,11 @@ class CartItemRepositoryImpl @Inject constructor(
         return cartItemDao.calculateTotal()
     }
 
+    override suspend fun calculateQuantity(): Int {
+        return cartItemDao.calculateQuantity()
+    }
+
+
     override suspend fun clearCart() {
         cartItemDao.clearCart()
     }

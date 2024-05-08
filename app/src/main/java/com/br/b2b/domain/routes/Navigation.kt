@@ -45,7 +45,7 @@ fun Navigation(navController: NavHostController) {
             RegisterScreen(navController, signUpViewModel)
         }
         composable(Screen.Products.route) {
-            HomeScreen(navController, themeViewModel, storeViewModel)
+            HomeScreen(navController, themeViewModel, storeViewModel, cartItemViewModel)
         }
 
         composable(

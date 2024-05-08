@@ -1,7 +1,6 @@
 package com.br.b2b.domain.repository
 
 import com.br.b2b.domain.model.CartItem
-import kotlinx.coroutines.flow.Flow
 
 interface CartItemRepository {
     suspend fun addToCart(cartItem: CartItem)
@@ -15,6 +14,7 @@ interface CartItemRepository {
     suspend fun updateCartItemQuantity(productId: Int, newQuantity: Int)
     suspend fun getProductQuantityInCart(productId: Int): Int
     suspend fun removeProductFromCart(productId: Int)
-    suspend fun calculateTotal() : Double
+    suspend fun calculateTotal(): Double
+    suspend fun calculateQuantity(): Int
     suspend fun clearCart()
 }

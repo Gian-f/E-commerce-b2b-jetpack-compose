@@ -324,7 +324,7 @@ fun ButtonComponent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text("Aguarde...", color = Color.White, fontSize = 10.sp)
+                    Text("Aguarde...", color = Color.White, fontSize = 12.sp)
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 1.dp,

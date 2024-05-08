@@ -48,6 +48,9 @@ interface CartItemDao {
     @Query("SELECT SUM(unitPrice * quantity) FROM cart_items")
     fun calculateTotal(): Double
 
+    @Query("SELECT SUM(quantity) FROM cart_items")
+    fun calculateQuantity(): Int
+
     @Query("DELETE FROM cart_items")
     suspend fun clearCart()
 }

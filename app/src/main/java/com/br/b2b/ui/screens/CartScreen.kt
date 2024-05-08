@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +48,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,14 +68,10 @@ fun CartScreen(
     val openDialog = remember { mutableStateOf(false) }
     val total by cartViewModel.total.collectAsStateWithLifecycle()
     val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
-    var cartItemsQuantity by remember { mutableIntStateOf(0) }
+    val cartItemsQuantity by cartViewModel.quantity.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         cartViewModel.getAllItemsFromCart()
-    }
-
-    LaunchedEffect(cartItems) {
-        cartItemsQuantity = cartItems.sumOf { it.quantity }
     }
 
     Scaffold(
