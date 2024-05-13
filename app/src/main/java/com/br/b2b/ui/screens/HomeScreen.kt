@@ -117,6 +117,7 @@ import com.br.b2b.util.ComposeTheme
 import com.br.b2b.util.FormatCurrency
 import com.br.b2b.util.Section
 import com.br.b2b.util.VoiceToTextParser
+import com.br.b2b.util.applyCpfMask
 import com.br.jetpacktest.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -138,7 +139,6 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         storeViewModel.fetchCategories()
         storeViewModel.fetchProducts()
-        userViewModel.fetchAllUsers()
     }
 
     BackHandler {
@@ -193,7 +193,8 @@ fun HomeScreen(
                             items = listOf("Dia", "Noite"),
                             onItemSelection = { selectedItemIndex ->
                                 themeViewModel.setTheme(if (selectedItemIndex == 0) ComposeTheme.Light else ComposeTheme.Dark)
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -214,14 +215,20 @@ fun HomeScreen(
 
 @Composable
 private fun DrawerHeader(openDialog: MutableState<Boolean>, userViewModel: UserViewModel) {
-    val username by userViewModel.users.collectAsStateWithLifecycle()
+    val loggedInUser by userViewModel.users.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        userViewModel.fetchAllUsers()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 26.dp, horizontal = 20.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
@@ -238,7 +245,7 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>, userViewModel: UserV
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = username[0].name,
+                    text = loggedInUser.firstOrNull()?.name ?: "Convidado",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(start = 16.dp),
                     style = MaterialTheme.typography.titleLarge,
@@ -247,7 +254,7 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>, userViewModel: UserV
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = username[0].cpf,
+                    text = applyCpfMask(loggedInUser.firstOrNull()?.cpf ?: "Convidado", 0).first,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     textAlign = TextAlign.Center,
@@ -292,14 +299,10 @@ private fun HomeContent(
     val filteredProducts by storeViewModel.filteredProducts.collectAsStateWithLifecycle()
     val categories by storeViewModel.categories.collectAsStateWithLifecycle()
     val productsInCart by cartItemViewModel.cartItems.collectAsStateWithLifecycle()
-
     val bannerPager = rememberPagerState { categories?.size ?: 0 }
     val application = LocalContext.current.applicationContext as Application
-
     val voiceToTextParser by remember { mutableStateOf(VoiceToTextParser(application)) }
-
     val voiceState by voiceToTextParser.state.collectAsStateWithLifecycle()
-
     var canRecord by remember { mutableStateOf(false) }
 
     val recordLauncher = rememberLauncherForActivityResult(
@@ -827,6 +830,9 @@ fun ProductGrid(
     navController: NavController,
     storeViewModel: StoreViewModel
 ) {
+    LaunchedEffect(Unit) {
+        storeViewModel.fetchProducts()
+    }
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(4.dp)

@@ -86,7 +86,6 @@ class SignUpViewModel @Inject constructor(
             }.onSuccess { response ->
                 val result = response.getOrNull()
                 if (result != null && result.status) {
-                        userViewModel.insertUser(result.result)
                     onSuccess.invoke()
                 } else {
                     val error =

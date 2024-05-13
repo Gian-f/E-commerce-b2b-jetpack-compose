@@ -43,7 +43,7 @@ class CartItemViewModel @Inject constructor(
         }
     }
 
-    private fun calculateQuantity() {
+    fun calculateQuantity() {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 repository.calculateQuantity()

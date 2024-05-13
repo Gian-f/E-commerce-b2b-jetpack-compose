@@ -72,6 +72,7 @@ fun CartScreen(
 
     LaunchedEffect(Unit) {
         cartViewModel.getAllItemsFromCart()
+        cartViewModel.calculateQuantity()
     }
 
     Scaffold(
@@ -157,21 +158,23 @@ fun CartScreen(
                 Button(
                     modifier = Modifier.width(150.dp),
                     shape = RoundedCornerShape(10.dp),
-                    onClick = { /*TODO*/ }) {
+                    onClick = {
+
+                    }) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Finalizar")
+                        Text("Finalizar", fontSize = 12.sp)
                         Box(
                             modifier = Modifier
-                                .padding(5.dp)
+                                .padding(8.dp)
                                 .background(Color.White, CircleShape)
                         ) {
                             Text(
                                 text = "$cartItemsQuantity",
-                                fontSize = 12.sp,
+                                fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )

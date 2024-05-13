@@ -13,13 +13,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class UserViewModel @Inject constructor(private val repository: UserRepository) : ViewModel() {
+class UserViewModel @Inject constructor(
+    private val repository: UserRepository
+) : ViewModel() {
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
-
-    init {
-        fetchAllUsers()
-    }
 
     fun fetchAllUsers() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -44,7 +42,7 @@ class UserViewModel @Inject constructor(private val repository: UserRepository) 
     }
 
     fun deleteAllUsers() {
-        viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             repository.deleteAll()
         }
     }

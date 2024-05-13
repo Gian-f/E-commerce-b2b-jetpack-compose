@@ -22,7 +22,7 @@ import com.br.b2b.domain.model.User
         CartItem::class,
         User::class
     ],
-    version = 1, exportSchema = false
+    version = 2, exportSchema = false
 )
 @TypeConverters(ImageListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
