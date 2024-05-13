@@ -43,7 +43,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -99,7 +98,7 @@ import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.br.b2b.data.dummy.NavigationDrawerData
-import com.br.b2b.data.dummy.NotificationsData.items
+import com.br.b2b.domain.model.CartItem
 import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.BottomSheetModalFilter
@@ -113,6 +112,7 @@ import com.br.b2b.ui.theme.BgColor
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
+import com.br.b2b.ui.viewmodel.UserViewModel
 import com.br.b2b.util.ComposeTheme
 import com.br.b2b.util.FormatCurrency
 import com.br.b2b.util.Section
@@ -124,6 +124,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     navController: NavHostController,
+    userViewModel: UserViewModel,
     themeViewModel: ThemeViewModel,
     storeViewModel: StoreViewModel,
     cartItemViewModel: CartItemViewModel
@@ -137,6 +138,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         storeViewModel.fetchCategories()
         storeViewModel.fetchProducts()
+        userViewModel.fetchAllUsers()
     }
 
     BackHandler {
@@ -151,7 +153,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item {
-                        DrawerHeader(openDialog)
+                        DrawerHeader(openDialog, userViewModel)
                     }
                     itemsIndexed(navigationItems) { index, item ->
                         NavigationDrawerItem(modifier = Modifier.padding(
@@ -203,6 +205,7 @@ fun HomeScreen(
             dialogState = openDialog,
             message = "Tem certeza que deseja sair?",
             onConfirm = {
+                userViewModel.deleteAllUsers()
                 navController.navigate(Screen.Login.route)
             },
         )
@@ -210,7 +213,8 @@ fun HomeScreen(
 }
 
 @Composable
-private fun DrawerHeader(openDialog: MutableState<Boolean>) {
+private fun DrawerHeader(openDialog: MutableState<Boolean>, userViewModel: UserViewModel) {
+    val username by userViewModel.users.collectAsStateWithLifecycle()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -228,13 +232,13 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>) {
                     .padding(12.dp)
                     .size(70.dp, 70.dp),
                 contentDescription = "Person",
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.inversePrimary
             )
             Column(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Gian Felipe",
+                    text = username[0].name,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(start = 16.dp),
                     style = MaterialTheme.typography.titleLarge,
@@ -243,7 +247,7 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "12345678",
+                    text = username[0].cpf,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 16.dp),
                     textAlign = TextAlign.Center,
@@ -286,8 +290,9 @@ private fun HomeContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val products by storeViewModel.products.collectAsStateWithLifecycle()
     val filteredProducts by storeViewModel.filteredProducts.collectAsStateWithLifecycle()
-    var selectedCategory by remember { mutableStateOf("") }
     val categories by storeViewModel.categories.collectAsStateWithLifecycle()
+    val productsInCart by cartItemViewModel.cartItems.collectAsStateWithLifecycle()
+
     val bannerPager = rememberPagerState { categories?.size ?: 0 }
     val application = LocalContext.current.applicationContext as Application
 
@@ -349,7 +354,7 @@ private fun HomeContent(
                         )
                     }
                 }, actions = {
-                    TopAppBarActions(navController, cartItemViewModel)
+                    TopAppBarActions(navController, productsInCart)
                 })
                 Text(
                     modifier = Modifier.padding(start = 16.dp, bottom = 12.dp),
@@ -448,17 +453,15 @@ private fun HomeContent(
         },
         content = { contentPadding ->
             if (!filteredProducts.isNullOrEmpty()) {
-                if (query.isEmpty()) {
-                    storeViewModel.setQuery(selectedCategory)
+                Column {
+                    ProductGrid(
+                        query = query,
+                        modifier = Modifier.padding(contentPadding),
+                        filteredProducts = filteredProducts,
+                        navController = navController,
+                        storeViewModel = storeViewModel
+                    )
                 }
-                ProductGrid(
-                    query = query,
-                    modifier = Modifier.padding(contentPadding),
-                    filteredProducts = filteredProducts,
-                    navController = navController,
-                    storeViewModel = storeViewModel
-                )
-
             } else {
                 LazyColumn(
                     modifier = Modifier
@@ -487,8 +490,8 @@ private fun HomeContent(
                                 CategoriesButton(
                                     name = categories.name,
                                     onClick = {
-                                        selectedCategory = categories.name
                                         storeViewModel.findProducts(categories.name)
+                                        storeViewModel.setQuery(categories.name)
                                     }
                                 )
                             }
@@ -583,20 +586,9 @@ private fun HomeContent(
     }
 }
 
+
 @Composable
-private fun TopAppBarActions(
-    navController: NavHostController,
-    cartItemViewModel: CartItemViewModel
-) {
-    val cartItems by cartItemViewModel.cartItems.collectAsStateWithLifecycle()
-
-    BadgedBox(badge = {
-        if (items.isNotEmpty()) {
-            Badge()
-        }
-    }) {
-
-    }
+private fun TopAppBarActions(navController: NavHostController, productsInCart: List<CartItem>) {
     Row {
         IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
             Icon(
@@ -605,22 +597,16 @@ private fun TopAppBarActions(
                 contentDescription = "Notifications"
             )
         }
-        IconButton(
-            onClick = { navController.navigate(Screen.CartItem.route) }
-        ) {
-            Box(contentAlignment = Alignment.Center) {
+        IconButton(onClick = { navController.navigate(Screen.CartItem.route) }) {
+            Box(modifier = Modifier.size(24.dp)) {
                 Icon(
                     imageVector = Icons.Outlined.ShoppingCart,
-                    modifier = Modifier.size(24.dp),
-                    contentDescription = "Carrinho de compras"
+                    contentDescription = "Shopping Cart"
                 )
-                if (cartItems.isNotEmpty()) {
+                if (productsInCart.isNotEmpty()) {
                     Badge(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .align(Alignment.TopEnd),
+                        modifier = Modifier.align(Alignment.TopEnd),
                         containerColor = Color.Red,
-                        contentColor = Color.White,
                     )
                 }
             }
@@ -842,24 +828,22 @@ fun ProductGrid(
     storeViewModel: StoreViewModel
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = "Exibindo resultados para: ", fontSize = 12.sp)
-            Text(
-                text = query,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            Text(text = "Exibindo resultados para: ", fontSize = 16.sp)
+            Text(text = query, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
             items(
                 items = filteredProducts.orEmpty(),

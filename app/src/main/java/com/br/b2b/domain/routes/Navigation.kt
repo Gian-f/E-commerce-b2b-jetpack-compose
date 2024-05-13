@@ -3,10 +3,10 @@ package com.br.b2b.domain.routes
 import LoginScreen
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.br.b2b.ui.screens.CardsScreen
 import com.br.b2b.ui.screens.CartScreen
@@ -22,15 +22,18 @@ import com.br.b2b.ui.viewmodel.LoginViewModel
 import com.br.b2b.ui.viewmodel.SignUpViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
+import com.br.b2b.ui.viewmodel.UserViewModel
 
 
 @Composable
-fun Navigation(navController: NavHostController) {
+fun Navigation() {
+    val navController = rememberNavController()
     val themeViewModel = hiltViewModel<ThemeViewModel>()
     val loginViewModel = hiltViewModel<LoginViewModel>()
     val storeViewModel = hiltViewModel<StoreViewModel>()
     val cartItemViewModel = hiltViewModel<CartItemViewModel>()
     val signUpViewModel = hiltViewModel<SignUpViewModel>()
+    val userViewModel = hiltViewModel<UserViewModel>()
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -45,7 +48,13 @@ fun Navigation(navController: NavHostController) {
             RegisterScreen(navController, signUpViewModel)
         }
         composable(Screen.Products.route) {
-            HomeScreen(navController, themeViewModel, storeViewModel, cartItemViewModel)
+            HomeScreen(
+                navController,
+                userViewModel,
+                themeViewModel,
+                storeViewModel,
+                cartItemViewModel
+            )
         }
 
         composable(

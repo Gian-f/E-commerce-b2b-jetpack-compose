@@ -184,8 +184,11 @@ fun CartScreen(
 
     ConfirmDialog(
         onConfirm = {
-            cartViewModel.clearCart()
-
+            cartViewModel.clearCart(
+                onComplete = {
+                    cartViewModel.getAllItemsFromCart()
+                }
+            )
         },
         dialogState = openDialog,
         message = "Você deseja remover todos os itens do seu carrinho?"

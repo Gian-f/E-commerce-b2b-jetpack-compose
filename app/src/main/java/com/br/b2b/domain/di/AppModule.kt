@@ -13,6 +13,7 @@ import com.br.b2b.data.local.AppDatabase
 import com.br.b2b.data.local.dao.CartItemDao
 import com.br.b2b.data.local.dao.CategoryDao
 import com.br.b2b.data.local.dao.ProductDao
+import com.br.b2b.data.local.dao.UserDao
 import com.br.b2b.data.local.datastore.DataStoreManager
 import com.br.b2b.data.local.datastore.PreferencesKeys
 import com.br.b2b.data.remote.infra.ApiServiceFactory
@@ -23,11 +24,13 @@ import com.br.b2b.domain.repository.CartItemRepository
 import com.br.b2b.domain.repository.CartItemRepositoryImpl
 import com.br.b2b.domain.repository.StoreRepository
 import com.br.b2b.domain.repository.StoreRepositoryImpl
+import com.br.b2b.domain.repository.UserRepositoryImpl
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.LoginViewModel
 import com.br.b2b.ui.viewmodel.SignUpViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.ui.viewmodel.ThemeViewModel
+import com.br.b2b.ui.viewmodel.UserViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,8 +54,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSignUpViewModel(authRepository: AuthRepositoryImpl): SignUpViewModel {
-        return SignUpViewModel(authRepository)
+    fun provideSignUpViewModel(
+        authRepository: AuthRepositoryImpl,
+        userViewModel: UserViewModel
+    ): SignUpViewModel {
+        return SignUpViewModel(authRepository, userViewModel)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserViewModel(userRepository: UserRepositoryImpl): UserViewModel {
+        return UserViewModel(userRepository)
     }
 
     @Provides
@@ -65,9 +77,10 @@ object AppModule {
     @Singleton
     fun provideLoginViewModel(
         authRepository: AuthRepositoryImpl,
-        dataStoreManager: DataStoreManager
+        dataStoreManager: DataStoreManager,
+        userViewModel: UserViewModel
     ): LoginViewModel {
-        return LoginViewModel(authRepository, dataStoreManager)
+        return LoginViewModel(authRepository, dataStoreManager, userViewModel)
     }
 
     @Provides
@@ -130,12 +143,17 @@ object AppModule {
         return Room.databaseBuilder(
             appContext,
             AppDatabase::class.java, "b2bDatabase.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides
     fun provideProductDao(database: AppDatabase): ProductDao {
         return database.productDao()
+    }
+
+    @Provides
+    fun provideUserDao(database: AppDatabase): UserDao {
+        return database.userDao()
     }
 
     @Provides

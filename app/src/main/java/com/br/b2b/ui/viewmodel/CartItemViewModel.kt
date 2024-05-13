@@ -32,8 +32,8 @@ class CartItemViewModel @Inject constructor(
     private var lastUpdateTime = System.currentTimeMillis()
 
     init {
-        getAllItemsFromCart()
         calculateTotal()
+        getAllItemsFromCart()
         calculateQuantity()
     }
 
@@ -100,7 +100,7 @@ class CartItemViewModel @Inject constructor(
 
     fun updateCartItemQuantity(productId: Int, newQuantity: Int) {
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastUpdateTime > 500) {
+        if (currentTime - lastUpdateTime > 500) { // Tempo de debounce de 500 milissegundos
             viewModelScope.launch {
                 repository.updateCartItemQuantity(productId, newQuantity)
                 calculateTotal()
@@ -110,11 +110,12 @@ class CartItemViewModel @Inject constructor(
         }
     }
 
-    fun clearCart() {
+    fun clearCart(onComplete: () -> Unit) {
         viewModelScope.launch {
             repository.clearCart()
             calculateTotal()
             calculateQuantity()
+            onComplete.invoke()
         }
     }
 }

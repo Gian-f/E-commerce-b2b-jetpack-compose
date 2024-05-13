@@ -5,14 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.br.b2b.data.remote.dto.request.CreateUserRequest
 import com.br.b2b.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val repository: AuthRepository,
+    private val userViewModel: UserViewModel,
 ) : ViewModel() {
 
     private val _name = MutableStateFlow("")
@@ -83,6 +86,7 @@ class SignUpViewModel @Inject constructor(
             }.onSuccess { response ->
                 val result = response.getOrNull()
                 if (result != null && result.status) {
+                        userViewModel.insertUser(result.result)
                     onSuccess.invoke()
                 } else {
                     val error =

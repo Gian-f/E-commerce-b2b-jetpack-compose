@@ -30,13 +30,12 @@ class MainActivity : FragmentActivity() {
             )
         )
         setContent {
-            val navController = rememberNavController()
             AppTheme(themeViewModel.currentTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Navigation(navController)
+                    Navigation()
                 }
             }
         }

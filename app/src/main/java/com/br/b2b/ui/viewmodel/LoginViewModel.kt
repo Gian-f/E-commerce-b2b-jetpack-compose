@@ -14,7 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val dataStoreManager: DataStoreManager
+    private val dataStoreManager: DataStoreManager,
+    private val userViewModel: UserViewModel,
 ) : ViewModel() {
 
     private val _username = MutableStateFlow("")
@@ -68,6 +69,7 @@ class LoginViewModel @Inject constructor(
                 val response = loginResponse.getOrNull()
                 if (response != null && response.status) {
                     clear()
+                    userViewModel.insertUser(response.user)
                     onSuccess.invoke(response.result)
                 } else {
                     _loginError.value = response?.message ?: "E-mail ou senha inválidos!"

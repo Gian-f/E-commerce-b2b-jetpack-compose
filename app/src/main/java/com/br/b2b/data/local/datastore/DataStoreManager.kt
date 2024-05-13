@@ -40,7 +40,7 @@ class DataStoreManager @Inject constructor(
     suspend fun updateSearchHistory(searchTerm: String, onSuccess: () -> Unit) {
         if (searchTerm.isNotEmpty()) {
             val currentHistory = getSearchHistory()
-            val updatedHistory = (currentHistory + searchTerm).distinct().takeLast(4)
+            val updatedHistory = (listOf(searchTerm) + currentHistory).distinct().take(5)
             dataStore.edit { preferences ->
                 preferences[PreferencesKeys.SEARCH_HISTORY] = updatedHistory.joinToString(",")
             }
