@@ -13,6 +13,9 @@ interface ProductDao {
     @Query("SELECT * FROM products")
     suspend fun getAllProducts(): List<Product>
 
+    @Query("SELECT * FROM products ORDER BY price DESC LIMIT 10")
+    suspend fun getAllRecommendedProducts(): List<Product>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun createProduct(product: Product)
 

@@ -5,6 +5,7 @@ import com.br.b2b.domain.model.Product
 
 interface StoreRepository {
     suspend fun fetchAllProducts(): Result<List<Product>>
+    suspend fun fetchAllRecommendedProducts(): Result<List<Product>>
     suspend fun fetchAllCategories(): Result<List<Category>>
     suspend fun findProductById(id: Int): Result<Product?>
     suspend fun findProducts(term: String): Result<List<Product?>>

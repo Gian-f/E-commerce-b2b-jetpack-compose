@@ -47,32 +47,32 @@ object NavigationDrawerData {
             unselectedIcon = Icons.Outlined.Newspaper,
             badgeCount = 10
         ),
-/*        NavigationDrawerItem(
-            title = Screen.Client.title,
-            route = Screen.Client.route,
-            selectedIcon = Icons.Filled.Person,
-            unselectedIcon = Icons.Outlined.Person,
-        ),*/
+        /*        NavigationDrawerItem(
+                    title = Screen.Client.title,
+                    route = Screen.Client.route,
+                    selectedIcon = Icons.Filled.Person,
+                    unselectedIcon = Icons.Outlined.Person,
+                ),*/
         NavigationDrawerItem(
             title = Screen.Orders.title,
             route = Screen.Orders.route,
             selectedIcon = Icons.Filled.ShoppingBag,
             unselectedIcon = Icons.Outlined.ShoppingBag,
         ),
-/*
-        NavigationDrawerItem(
-            title = Screen.Titles.title,
-            route = Screen.Titles.route,
-            selectedIcon = Icons.Filled.AccountBalance,
-            unselectedIcon = Icons.Outlined.AccountBalance,
-        ),
-*/
-        NavigationDrawerItem(
-            title = Screen.MyCards.title,
-            route = Screen.MyCards.route,
-            selectedIcon = Icons.Filled.CreditCard,
-            unselectedIcon = Icons.Outlined.CreditCard,
-        ),
+        /*
+                NavigationDrawerItem(
+                    title = Screen.Titles.title,
+                    route = Screen.Titles.route,
+                    selectedIcon = Icons.Filled.AccountBalance,
+                    unselectedIcon = Icons.Outlined.AccountBalance,
+                ),
+        */
+//        NavigationDrawerItem(
+//            title = Screen.MyCards.title,
+//            route = Screen.MyCards.route,
+//            selectedIcon = Icons.Filled.CreditCard,
+//            unselectedIcon = Icons.Outlined.CreditCard,
+//        ),
         NavigationDrawerItem(
             title = Screen.Culture.title,
             route = Screen.Culture.route,
@@ -85,12 +85,12 @@ object NavigationDrawerData {
             selectedIcon = Icons.AutoMirrored.Filled.ContactSupport,
             unselectedIcon = Icons.AutoMirrored.Outlined.ContactSupport,
         ),
-/*        NavigationDrawerItem(
-            title = Screen.Tutorial.title,
-            route = Screen.Tutorial.route,
-            selectedIcon = Icons.Filled.Help,
-            unselectedIcon = Icons.Outlined.HelpOutline,
-        ),*/
+        /*        NavigationDrawerItem(
+                    title = Screen.Tutorial.title,
+                    route = Screen.Tutorial.route,
+                    selectedIcon = Icons.Filled.Help,
+                    unselectedIcon = Icons.Outlined.HelpOutline,
+                ),*/
         NavigationDrawerItem(
             title = Screen.Settings.title,
             route = Screen.Settings.route,

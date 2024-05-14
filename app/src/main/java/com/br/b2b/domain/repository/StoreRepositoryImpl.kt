@@ -15,6 +15,12 @@ class StoreRepositoryImpl
     private val categoryDao: CategoryDao
 ) : StoreRepository {
 
+    override suspend fun fetchAllRecommendedProducts(): Result<List<Product>> {
+        return runCatching {
+            productDao.getAllRecommendedProducts()
+        }
+    }
+
     override suspend fun fetchAllProducts(): Result<List<Product>> {
         val localProducts = productDao.getAllProducts()
         if (localProducts.isNotEmpty()) {

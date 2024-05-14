@@ -35,11 +35,13 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ProductionQuantityLimits
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Badge
@@ -71,6 +73,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +84,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -104,7 +109,6 @@ import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.BottomSheetModalFilter
 import com.br.b2b.ui.components.CategoriesButton
 import com.br.b2b.ui.components.ConfirmDialog
-import com.br.b2b.ui.components.FilterButton
 import com.br.b2b.ui.components.HistoryItem
 import com.br.b2b.ui.components.PagerIndicator
 import com.br.b2b.ui.components.SegmentedButton
@@ -139,6 +143,8 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         storeViewModel.fetchCategories()
         storeViewModel.fetchProducts()
+        storeViewModel.fetchRecommendedProducts()
+        storeViewModel.fetchEletronicsProducts()
     }
 
     BackHandler {
@@ -193,8 +199,7 @@ fun HomeScreen(
                             items = listOf("Dia", "Noite"),
                             onItemSelection = { selectedItemIndex ->
                                 themeViewModel.setTheme(if (selectedItemIndex == 0) ComposeTheme.Light else ComposeTheme.Dark)
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -227,8 +232,7 @@ private fun DrawerHeader(openDialog: MutableState<Boolean>, userViewModel: UserV
             .padding(vertical = 26.dp, horizontal = 20.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.Center
+            verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
@@ -296,9 +300,11 @@ private fun HomeContent(
     val sheetState = rememberModalBottomSheetState(true)
     val snackbarHostState = remember { SnackbarHostState() }
     val products by storeViewModel.products.collectAsStateWithLifecycle()
+    val recommendedProducts by storeViewModel.recommendedProducts.collectAsStateWithLifecycle()
+    val eletronicsProducts by storeViewModel.eletronicsProducts.collectAsStateWithLifecycle()
     val filteredProducts by storeViewModel.filteredProducts.collectAsStateWithLifecycle()
     val categories by storeViewModel.categories.collectAsStateWithLifecycle()
-    val productsInCart by cartItemViewModel.cartItems.collectAsStateWithLifecycle()
+    val productsInCart by cartItemViewModel.cartItems.collectAsState()
     val bannerPager = rememberPagerState { categories?.size ?: 0 }
     val application = LocalContext.current.applicationContext as Application
     val voiceToTextParser by remember { mutableStateOf(VoiceToTextParser(application)) }
@@ -319,7 +325,8 @@ private fun HomeContent(
                     )
                 }
             }
-        })
+        }
+    )
 
     LaunchedEffect(key1 = recordLauncher) {
         recordLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -329,36 +336,39 @@ private fun HomeContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
-                CenterAlignedTopAppBar(title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Compra",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = TextUnit(20F, TextUnitType.Sp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Certa",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = TextUnit(20F, TextUnitType.Sp),
-                            color = Color(0xFF0097b2)
-                        )
-                    }
-                }, navigationIcon = {
-                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                }, actions = {
-                    TopAppBarActions(navController, productsInCart)
-                })
+                CenterAlignedTopAppBar(
+                    title = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Compra",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = TextUnit(20F, TextUnitType.Sp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Certa",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = TextUnit(20F, TextUnitType.Sp),
+                                color = Color(0xFF0097b2)
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                imageVector = Icons.Filled.Menu,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                    },
+                    actions = {
+                        TopAppBarActions(navController, productsInCart)
+                    })
                 Text(
                     modifier = Modifier.padding(start = 16.dp, bottom = 12.dp),
                     text = "Olá! Você está pronto para descobrir algo incrível hoje?",
@@ -369,88 +379,85 @@ private fun HomeContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row {
-                        DockedSearchBar(modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(8.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            query = query.ifEmpty { voiceState.spokenText },
-                            onQueryChange = { currentQuery ->
-                                storeViewModel.setQuery(currentQuery.ifBlank { voiceState.spokenText })
-                                if (query.length == 1) {
-                                    voiceState.spokenText = ""
+                    DockedSearchBar(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        query = query.ifEmpty { voiceState.spokenText },
+                        onQueryChange = { currentQuery ->
+                            storeViewModel.setQuery(currentQuery.ifBlank { voiceState.spokenText })
+                            if (query.length == 1) {
+                                voiceState.spokenText = ""
+                            }
+                        },
+                        onSearch = {
+                            val cleanedQuery = query.trim()
+                            val cleanedSpokenText = voiceState.spokenText.trim()
+                            val searchTerms = listOf(
+                                cleanedQuery, cleanedSpokenText
+                            ).filter { it.isNotEmpty() && !historyItems.contains(it) }
+                            searchTerms.forEach { term ->
+                                storeViewModel.saveSearchHistory(term)
+                                storeViewModel.findProducts(term)
+                            }
+                            storeViewModel.toggleSearchBar()
+                        },
+                        active = active,
+                        onActiveChange = { storeViewModel.toggleSearchBar() },
+                        placeholder = { Text(text = "Procure...") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search, contentDescription = "Search"
+                            )
+                        },
+                        trailingIcon = {
+                            Row {
+                                val icon = if (voiceState.isSpeaking) {
+                                    painterResource(id = R.drawable.ic_hearing)
+                                } else {
+                                    painterResource(id = R.drawable.ic_mic)
                                 }
-                            },
-                            onSearch = {
-                                val cleanedQuery = query.trim()
-                                val cleanedSpokenText = voiceState.spokenText.trim()
-                                val searchTerms = listOf(cleanedQuery, cleanedSpokenText)
-                                    .filter { it.isNotEmpty() && !historyItems.contains(it) }
-                                searchTerms.forEach { term ->
-                                    storeViewModel.saveSearchHistory(term)
-                                    storeViewModel.findProducts(term)
-                                }
-                                storeViewModel.toggleSearchBar()
-                            }, active = active,
-                            onActiveChange = { storeViewModel.toggleSearchBar() },
-                            placeholder = { Text(text = "Procure...") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search"
-                                )
-                            },
-                            trailingIcon = {
-                                Row {
-                                    val icon = if (voiceState.isSpeaking) {
-                                        painterResource(id = R.drawable.ic_hearing)
-                                    } else {
-                                        painterResource(id = R.drawable.ic_mic)
-                                    }
 
-                                    Icon(painter = icon,
-                                        contentDescription = "Voice",
+                                Icon(painter = icon,
+                                    contentDescription = "Voice",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            if (voiceState.isSpeaking) {
+                                                voiceToTextParser.stopListening()
+                                            } else {
+                                                voiceToTextParser.startListening()
+                                            }
+                                        })
+                                Spacer(modifier = Modifier.width(16.dp))
+                                if (active) {
+                                    Icon(imageVector = Icons.Filled.Close,
+                                        contentDescription = "Search",
                                         modifier = Modifier
-                                            .size(24.dp)
                                             .clip(CircleShape)
                                             .clickable {
-                                                if (voiceState.isSpeaking) {
-                                                    voiceToTextParser.stopListening()
-                                                } else {
-                                                    voiceToTextParser.startListening()
+                                                if (query.isNotEmpty() || voiceState.spokenText.isNotEmpty()) {
+                                                    storeViewModel.setQuery("")
+                                                    voiceState.spokenText = ""
                                                 }
-                                            }
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    if (active) {
-                                        Icon(imageVector = Icons.Filled.Close,
-                                            contentDescription = "Search",
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .clickable {
-                                                    if (query.isNotEmpty() || voiceState.spokenText.isNotEmpty()) {
-                                                        storeViewModel.setQuery("")
-                                                        voiceState.spokenText = ""
-                                                    }
-                                                    storeViewModel.toggleSearchBar()
-                                                }
-                                        )
-                                    }
+                                                storeViewModel.toggleSearchBar()
+                                            })
                                 }
-                            },
-                            content = {
-                                historyItems.reversed().forEach { itemName ->
+                            }
+                        },
+                        content = {
+                            LazyColumn {
+                                items(
+                                    items = historyItems,
+                                    key = { it },
+                                    contentType = { it }
+                                ) { itemName ->
                                     HistoryItem(name = itemName, storeViewModel)
                                 }
                             }
-                        )
-                        FilterButton(
-                            onClick = { scope.launch { sheetState.show() } },
-                            modifier = Modifier
-                                .padding(top = 16.dp)
-                                .width(70.dp)
-                        )
-                    }
+                        }
+                    )
                 }
             }
         },
@@ -472,8 +479,7 @@ private fun HomeContent(
                         .padding(contentPadding)
                 ) {
                     item(
-                        key = Section.Categories.id,
-                        contentType = Section.Categories.contentType
+                        key = Section.Categories.id, contentType = Section.Categories.contentType
                     ) {
                         Text(
                             modifier = Modifier.padding(start = 16.dp, top = 16.dp),
@@ -485,13 +491,12 @@ private fun HomeContent(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp, top = 8.dp, start = 12.dp, end = 12.dp)
+                                .padding(vertical = 8.dp, horizontal = 12.dp)
                         ) {
                             items(items = categories.orEmpty(),
                                 key = { it.id },
                                 contentType = { it.id }) { categories ->
-                                CategoriesButton(
-                                    name = categories.name,
+                                CategoriesButton(name = categories.name,
                                     onClick = {
                                         storeViewModel.findProducts(categories.name)
                                         storeViewModel.setQuery(categories.name)
@@ -502,7 +507,8 @@ private fun HomeContent(
                     }
 
                     item(
-                        key = Section.Banners.id, contentType = Section.Banners.contentType
+                        key = Section.Banners.id,
+                        contentType = Section.Banners.contentType
                     ) {
                         HorizontalPager(
                             modifier = Modifier.padding(top = 16.dp),
@@ -537,6 +543,51 @@ private fun HomeContent(
                         PagerIndicator(bannerPager, categories)
                     }
 
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(3.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .height(80.dp)
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0x88FFFFFF), Color(0x44FFFFFF)),
+                                        start = Offset(x = 0f, y = 0f),
+                                        end = Offset(x = 1f, y = 1f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            onClick = { }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ProductionQuantityLimits,
+                                    contentDescription = "Clube de descontos"
+                                )
+                                Column {
+                                    Text(
+                                        text = "Assine o clube para obter descontos!",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(text = "Descontos de até 20%", fontSize = 12.sp)
+                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+
                     item(
                         key = Section.FeaturedProducts.id,
                         contentType = Section.FeaturedProducts.contentType
@@ -569,7 +620,30 @@ private fun HomeContent(
                         LazyRow(
                             contentPadding = PaddingValues(end = 64.dp),
                         ) {
-                            items(items = products.orEmpty(),
+                            items(items = recommendedProducts.orEmpty(),
+                                key = { item -> item.id },
+                                contentType = { item -> item.id }) { product ->
+                                ProductItem(product = product, onProductClicked = {
+                                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+                                }, onFavoriteClicked = {
+                                    storeViewModel.toggleFavoriteStatus(product.id)
+                                })
+                            }
+                        }
+                    }
+
+
+                    item(
+                        key = Section.EletronicsProducts.id,
+                        contentType = Section.EletronicsProducts.contentType
+                    ) {
+                        SectionTitle(
+                            title = "Eletrônicos para você!", modifier = Modifier.padding(16.dp)
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(end = 64.dp),
+                        ) {
+                            items(items = eletronicsProducts.orEmpty(),
                                 key = { item -> item.id },
                                 contentType = { item -> item.id }) { product ->
                                 ProductItem(product = product, onProductClicked = {
@@ -582,8 +656,7 @@ private fun HomeContent(
                     }
                 }
             }
-        }
-    )
+        })
     if (sheetState.isVisible) {
         BottomSheetModalFilter(sheetState, scope)
     }
@@ -603,8 +676,7 @@ private fun TopAppBarActions(navController: NavHostController, productsInCart: L
         IconButton(onClick = { navController.navigate(Screen.CartItem.route) }) {
             Box(modifier = Modifier.size(24.dp)) {
                 Icon(
-                    imageVector = Icons.Outlined.ShoppingCart,
-                    contentDescription = "Shopping Cart"
+                    imageVector = Icons.Outlined.ShoppingCart, contentDescription = "Shopping Cart"
                 )
                 if (productsInCart.isNotEmpty()) {
                     Badge(
@@ -619,7 +691,7 @@ private fun TopAppBarActions(navController: NavHostController, productsInCart: L
 
 
 @Composable
-fun SectionTitle(title: String, modifier: Modifier = Modifier) {
+fun SectionTitle(title: String, modifier: Modifier = Modifier, isSeeMoreVisibile: Boolean = true) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()
     ) {
@@ -628,21 +700,21 @@ fun SectionTitle(title: String, modifier: Modifier = Modifier) {
             fontWeight = FontWeight.SemiBold,
             fontSize = TextUnit(16F, TextUnitType.Sp)
         )
-        Text(text = "Ver mais",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = TextUnit(13F, TextUnitType.Sp),
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .clickable { })
+        if (isSeeMoreVisibile) {
+            Text(text = "Ver mais",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = TextUnit(13F, TextUnitType.Sp),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { })
+        }
     }
 }
 
 @Composable
 fun ProductItem(
-    product: Product,
-    onProductClicked: (Product) -> Unit,
-    onFavoriteClicked: (Product) -> Unit
+    product: Product, onProductClicked: (Product) -> Unit, onFavoriteClicked: (Product) -> Unit
 ) {
     var isFavorited by rememberSaveable { mutableStateOf(product.isFavorited) }
     val url by rememberSaveable { mutableStateOf(product.images[0]) }
@@ -661,8 +733,7 @@ fun ProductItem(
                 modifier = Modifier.weight(1f)
             ) {
                 SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(url)
-                        .crossfade(true)
+                    model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator(
@@ -691,8 +762,7 @@ fun ProductItem(
                         onClick = {
                             isFavorited = !isFavorited
                             onFavoriteClicked.invoke(product.copy(isFavorited = isFavorited))
-                        },
-                        modifier = Modifier.size(24.dp)
+                        }, modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -733,9 +803,7 @@ fun ProductItem(
 
 @Composable
 fun ProductItemFilter(
-    product: Product,
-    onProductClicked: (Product) -> Unit,
-    onFavoriteClicked: (Product) -> Unit
+    product: Product, onProductClicked: (Product) -> Unit, onFavoriteClicked: (Product) -> Unit
 ) {
     var isFavorited by rememberSaveable { mutableStateOf(product.isFavorited) }
     val url by rememberSaveable { mutableStateOf(product.images[0]) }
@@ -754,8 +822,7 @@ fun ProductItemFilter(
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.weight(1f)) {
                 SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(url)
-                        .crossfade(true)
+                    model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator(
@@ -834,12 +901,10 @@ fun ProductGrid(
         storeViewModel.fetchProducts()
     }
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
@@ -847,13 +912,12 @@ fun ProductGrid(
             Text(text = query, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         }
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxWidth()
+            columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth()
         ) {
             items(
                 items = filteredProducts.orEmpty(),
-                key = { item -> item.id }) { product ->
+                key = { item -> item.id },
+                contentType = { item -> item.id }) { product ->
                 ProductItemFilter(
                     product = product,
                     onProductClicked = {

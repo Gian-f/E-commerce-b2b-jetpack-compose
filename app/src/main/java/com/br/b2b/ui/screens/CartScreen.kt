@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -212,7 +213,7 @@ fun CartItemRow(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        androidx.compose.material3.Card(
+        Card(
             modifier = Modifier
                 .width(120.dp)
                 .height(80.dp)

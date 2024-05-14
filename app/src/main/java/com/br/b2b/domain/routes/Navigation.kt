@@ -12,6 +12,7 @@ import com.br.b2b.ui.screens.CardsScreen
 import com.br.b2b.ui.screens.CartScreen
 import com.br.b2b.ui.screens.HomeScreen
 import com.br.b2b.ui.screens.NotificationsScreen
+import com.br.b2b.ui.screens.OffersScreen
 import com.br.b2b.ui.screens.OrdersScreen
 import com.br.b2b.ui.screens.ProductDetailScreen
 import com.br.b2b.ui.screens.ProfileScreen
@@ -86,6 +87,9 @@ fun Navigation() {
         }
         composable(Screen.Profile.route) {
             ProfileScreen(navController)
+        }
+        composable(Screen.Offers.route) {
+            OffersScreen(navController, storeViewModel, cartItemViewModel)
         }
         composable(Screen.MyCards.route) {
             CardsScreen(navController)

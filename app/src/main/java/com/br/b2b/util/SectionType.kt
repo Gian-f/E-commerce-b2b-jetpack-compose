@@ -25,4 +25,9 @@ sealed class Section {
         const val id = "recommendedProducts"
         const val contentType = "recommendedProducts"
     }
+
+    data object EletronicsProducts : Section() {
+        const val id = "eletronics"
+        const val contentType = "eletronics"
+    }
 }

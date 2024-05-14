@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -27,6 +26,12 @@ class StoreViewModel @Inject constructor(
 
     private val _products = MutableStateFlow<List<Product>?>(null)
     val products: StateFlow<List<Product>?> = _products
+
+    private val _recommendedProducts = MutableStateFlow<List<Product>?>(null)
+    val recommendedProducts: StateFlow<List<Product>?> = _recommendedProducts
+
+    private val _eletronicsProducts = MutableStateFlow<List<Product>?>(null)
+    val eletronicsProducts: StateFlow<List<Product>?> = _eletronicsProducts
 
     private val _filteredProducts = MutableStateFlow<List<Product>?>(null)
     val filteredProducts: StateFlow<List<Product>?> = _filteredProducts
@@ -162,6 +167,34 @@ class StoreViewModel @Inject constructor(
                 _errorMessage.value =
                     "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
                 _products.value = null
+            }
+        }
+    }
+
+    fun fetchRecommendedProducts() {
+        viewModelScope.launch {
+            val result = repository.fetchAllRecommendedProducts()
+            if (result.isSuccess) {
+                _recommendedProducts.value = result.getOrNull()
+                result.getOrNull()?.let { repository.createProducts(it) }
+            } else {
+                _errorMessage.value =
+                    "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
+                _recommendedProducts.value = null
+            }
+        }
+    }
+
+    fun fetchEletronicsProducts() {
+        viewModelScope.launch {
+            val result = repository.getProductsInCategory(1)
+            if (result.isSuccess) {
+                _eletronicsProducts.value = result.getOrNull()
+                result.getOrNull()?.let { repository.createProducts(it) }
+            } else {
+                _errorMessage.value =
+                    "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
+                _eletronicsProducts.value = null
             }
         }
     }
