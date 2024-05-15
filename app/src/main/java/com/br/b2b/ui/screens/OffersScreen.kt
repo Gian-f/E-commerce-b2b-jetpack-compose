@@ -77,7 +77,7 @@ fun OffersScreen(
             CenterAlignedTopAppBar(
                 title = { Text(text = "Ofertas") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back_ios),
                             contentDescription = "Go Back"
@@ -109,31 +109,19 @@ fun OffersScreen(
                 .fillMaxSize()
                 .padding(paddingValue)
         ) {
-            item(
-                key = Section.FeaturedProducts.id,
-                contentType = Section.FeaturedProducts.contentType
-            ) {
-                SectionTitle(
-                    title = "Produtos em desconto!", modifier = Modifier.padding(16.dp), false
-                )
-                LazyColumn(
-                    contentPadding = PaddingValues(end = 64.dp),
-                ) {
-                    items(
-                        items = featuredProducts.orEmpty(),
-                        key = { item -> item.id },
-                        contentType = { item -> item.id }) { product ->
-                        ProductOfferItem(
-                            product = product,
-                            onProductClicked = {
-                                navController.navigate(Screen.ProductDetail.route + "/${it.id}")
-                            },
-                            onFavoriteClicked = {
-                                storeViewModel.toggleFavoriteStatus(product.id)
-                            }
-                        )
+            items(
+                items = featuredProducts.orEmpty(),
+                key = { item -> item.id },
+                contentType = { item -> item.id }) { product ->
+                ProductOfferItem(
+                    product = product,
+                    onProductClicked = {
+                        navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+                    },
+                    onFavoriteClicked = {
+                        storeViewModel.toggleFavoriteStatus(product.id)
                     }
-                }
+                )
             }
         }
     }
@@ -150,8 +138,8 @@ fun ProductOfferItem(
     androidx.compose.material3.Card(elevation = CardDefaults.cardElevation(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(230.dp)
-            .padding(12.dp)
+            .height(280.dp)
+            .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
                 onProductClicked.invoke(product)
@@ -159,7 +147,7 @@ fun ProductOfferItem(
             .padding(3.dp)) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(0.7f)
             ) {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(url)

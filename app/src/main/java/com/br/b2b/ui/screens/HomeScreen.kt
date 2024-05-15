@@ -140,13 +140,6 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val openDialog = remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        storeViewModel.fetchCategories()
-        storeViewModel.fetchProducts()
-        storeViewModel.fetchRecommendedProducts()
-        storeViewModel.fetchEletronicsProducts()
-    }
-
     BackHandler {
         openDialog.value = true
     }
@@ -328,6 +321,13 @@ private fun HomeContent(
         }
     )
 
+    LaunchedEffect(Unit) {
+        storeViewModel.fetchCategories()
+        storeViewModel.fetchProducts()
+        storeViewModel.fetchRecommendedProducts()
+        storeViewModel.fetchEletronicsProducts()
+    }
+
     LaunchedEffect(key1 = recordLauncher) {
         recordLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
@@ -411,7 +411,7 @@ private fun HomeContent(
                             )
                         },
                         trailingIcon = {
-                            Row {
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 val icon = if (voiceState.isSpeaking) {
                                     painterResource(id = R.drawable.ic_hearing)
                                 } else {
@@ -430,7 +430,6 @@ private fun HomeContent(
                                                 voiceToTextParser.startListening()
                                             }
                                         })
-                                Spacer(modifier = Modifier.width(16.dp))
                                 if (active) {
                                     Icon(imageVector = Icons.Filled.Close,
                                         contentDescription = "Search",
@@ -442,7 +441,8 @@ private fun HomeContent(
                                                     voiceState.spokenText = ""
                                                 }
                                                 storeViewModel.toggleSearchBar()
-                                            })
+                                            }
+                                    )
                                 }
                             }
                         },
@@ -620,7 +620,7 @@ private fun HomeContent(
                         LazyRow(
                             contentPadding = PaddingValues(end = 64.dp),
                         ) {
-                            items(items = recommendedProducts.orEmpty(),
+                            items(items = products.orEmpty(),
                                 key = { item -> item.id },
                                 contentType = { item -> item.id }) { product ->
                                 ProductItem(product = product, onProductClicked = {
@@ -633,27 +633,27 @@ private fun HomeContent(
                     }
 
 
-                    item(
-                        key = Section.EletronicsProducts.id,
-                        contentType = Section.EletronicsProducts.contentType
-                    ) {
-                        SectionTitle(
-                            title = "Eletrônicos para você!", modifier = Modifier.padding(16.dp)
-                        )
-                        LazyRow(
-                            contentPadding = PaddingValues(end = 64.dp),
-                        ) {
-                            items(items = eletronicsProducts.orEmpty(),
-                                key = { item -> item.id },
-                                contentType = { item -> item.id }) { product ->
-                                ProductItem(product = product, onProductClicked = {
-                                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
-                                }, onFavoriteClicked = {
-                                    storeViewModel.toggleFavoriteStatus(product.id)
-                                })
-                            }
-                        }
-                    }
+//                    item(
+//                        key = Section.EletronicsProducts.id,
+//                        contentType = Section.EletronicsProducts.contentType
+//                    ) {
+//                        SectionTitle(
+//                            title = "Eletrônicos para você!", modifier = Modifier.padding(16.dp)
+//                        )
+//                        LazyRow(
+//                            contentPadding = PaddingValues(end = 64.dp),
+//                        ) {
+//                            items(items = eletronicsProducts.orEmpty(),
+//                                key = { item -> item.id },
+//                                contentType = { item -> item.id }) { product ->
+//                                ProductItem(product = product, onProductClicked = {
+//                                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+//                                }, onFavoriteClicked = {
+//                                    storeViewModel.toggleFavoriteStatus(product.id)
+//                                })
+//                            }
+//                        }
+//                    }
                 }
             }
         })

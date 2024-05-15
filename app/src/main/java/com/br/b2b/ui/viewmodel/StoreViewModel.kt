@@ -176,7 +176,6 @@ class StoreViewModel @Inject constructor(
             val result = repository.fetchAllRecommendedProducts()
             if (result.isSuccess) {
                 _recommendedProducts.value = result.getOrNull()
-                result.getOrNull()?.let { repository.createProducts(it) }
             } else {
                 _errorMessage.value =
                     "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
@@ -190,7 +189,6 @@ class StoreViewModel @Inject constructor(
             val result = repository.getProductsInCategory(1)
             if (result.isSuccess) {
                 _eletronicsProducts.value = result.getOrNull()
-                result.getOrNull()?.let { repository.createProducts(it) }
             } else {
                 _errorMessage.value =
                     "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
