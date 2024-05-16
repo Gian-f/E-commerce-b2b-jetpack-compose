@@ -56,12 +56,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.size.Scale
 import com.br.b2b.domain.model.Product
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.util.FormatCurrency
+import kotlinx.coroutines.Dispatchers
 
 const val appBarTitle = "Detalhes"
 const val appBarTitleFontSize = 18.0f
@@ -101,44 +103,36 @@ fun ProductDetailScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = appBarTitle,
-                        fontSize = TextUnit(appBarTitleFontSize, TextUnitType.Sp)
+            CenterAlignedTopAppBar(title = {
+                Text(
+                    text = appBarTitle,
+                    fontSize = TextUnit(appBarTitleFontSize, TextUnitType.Sp)
+                )
+            }, actions = {
+                IconButton(onClick = {
+                    isFavorited = !isFavorited
+                    productId?.let { id ->
+                        storeViewModel.toggleFavoriteStatus(id)
+                    }
+                }) {
+                    Icon(
+                        imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        tint = if (isFavorited) Color.Red else Color.Black,
+                        contentDescription = "Favorite"
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            isFavorited = !isFavorited
-                            productId?.let { id ->
-                                storeViewModel.toggleFavoriteStatus(id)
-                            }
-                        }) {
-                        Icon(
-                            imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                            tint = if (isFavorited) Color.Red else Color.Black,
-                            contentDescription = "Favorite"
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onBackPress.invoke() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBackIosNew,
-                            contentDescription = "Voltar"
-                        )
-                    }
                 }
-            )
+            }, navigationIcon = {
+                IconButton(onClick = { onBackPress.invoke() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBackIosNew,
+                        contentDescription = "Voltar"
+                    )
+                }
+            })
         },
         content = { innerPadding ->
             ProductDetailContent(
-                product,
-                Modifier
-                    .consumeWindowInsets(innerPadding)
-                    .padding(innerPadding)
+                product, Modifier.padding(innerPadding)
             )
         },
         bottomBar = {
@@ -157,12 +151,10 @@ fun ProductDetailScreen(
                         }
                     )
                 } else {
-                    QuantitySelector(
-                        cartItemViewModel = cartItemViewModel,
+                    QuantitySelector(cartItemViewModel = cartItemViewModel,
                         product = product,
                         quantity = quantity,
-                        onNavigate = { onNavigate.invoke() }
-                    ) { newQuantity ->
+                        onNavigate = { onNavigate.invoke() }) { newQuantity ->
                         quantity = newQuantity
                         if (newQuantity == 0) {
                             product?.let {
@@ -178,8 +170,7 @@ fun ProductDetailScreen(
 
 @Composable
 fun ProductDetailContent(
-    product: Product?,
-    modifier: Modifier = Modifier
+    product: Product?, modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.align(Alignment.TopCenter)) {
@@ -193,10 +184,9 @@ fun ProductDetailContent(
 @Composable
 fun AddToCartButton(onClick: () -> Unit) {
     Button(
-        onClick = onClick,
-        modifier = Modifier
+        onClick = onClick, modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.AddShoppingCart,
@@ -214,11 +204,16 @@ fun AddToCartButton(onClick: () -> Unit) {
 
 @Composable
 fun ProductImage(product: Product?) {
-    val painter = rememberAsyncImagePainter(
-        ImageRequest.Builder(LocalContext.current).data(data = product?.images?.get(0))
-            .apply(block = fun ImageRequest.Builder.() {
-                scale(Scale.FILL)
-            }).build()
+    val painter = rememberAsyncImagePainter(ImageRequest.Builder(LocalContext.current)
+        .diskCachePolicy(CachePolicy.ENABLED)
+        .diskCacheKey(product?.images?.get(0))
+        .dispatcher(Dispatchers.IO)
+        .data(data = product?.images?.get(0))
+        .apply(block = fun ImageRequest.Builder.() {
+            scale(Scale.FILL)
+        }
+        )
+        .build()
     )
     Image(
         painter = painter,
@@ -312,34 +307,27 @@ fun QuantitySelector(
     ) {
 
         Text(
-            text = formattedTotalPrice,
-            fontWeight = FontWeight.Bold
+            text = formattedTotalPrice, fontWeight = FontWeight.Bold
         )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            IconButton(
-                onClick = {
-                    onQuantityChange(quantity - 1)
-                    cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity - 1)
-                }
-            ) {
+            IconButton(onClick = {
+                onQuantityChange(quantity - 1)
+                cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity - 1)
+            }) {
                 Icon(Icons.Filled.Remove, contentDescription = "Diminuir quantidade")
             }
             Text(text = quantity.toString(), fontWeight = FontWeight.Bold)
-            IconButton(
-                onClick = {
-                    onQuantityChange(quantity + 1)
-                    cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity + 1)
-                }
-            ) {
+            IconButton(onClick = {
+                onQuantityChange(quantity + 1)
+                cartItemViewModel.updateCartItemQuantity(product?.id ?: 0, quantity + 1)
+            }) {
                 Icon(Icons.Filled.Add, contentDescription = "Aumentar quantidade")
             }
-            Button(
-                shape = RoundedCornerShape(10.dp),
-                onClick = { onNavigate.invoke() }) {
+            Button(shape = RoundedCornerShape(10.dp), onClick = { onNavigate.invoke() }) {
                 Icon(imageVector = Icons.Filled.ShoppingCart, contentDescription = "")
             }
         }

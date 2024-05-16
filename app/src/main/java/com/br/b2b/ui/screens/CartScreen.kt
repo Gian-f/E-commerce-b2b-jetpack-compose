@@ -50,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -59,10 +60,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.br.b2b.domain.model.CartItem
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.util.FormatCurrency
+import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -236,7 +240,12 @@ fun CartItemRow(
         ) {
             SubcomposeAsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = item.productImages[0],
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.productImages[0])
+                    .dispatcher(Dispatchers.IO)
+                    .diskCacheKey(item.productImages[0])
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .build(),
                 alignment = Alignment.Center,
                 contentScale = ContentScale.FillBounds,
                 loading = {

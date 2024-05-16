@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,9 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.routes.Screen
@@ -60,7 +58,6 @@ import com.br.b2b.ui.theme.BgColor
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.ui.viewmodel.StoreViewModel
 import com.br.b2b.util.FormatCurrency
-import com.br.b2b.util.Section
 import com.br.jetpacktest.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,30 +75,28 @@ fun OffersScreen(
             CenterAlignedTopAppBar(
                 title = { Text(text = "Ofertas") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
+                IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_back_ios),
+                        contentDescription = "Go Back"
+                    )
+                }
+            }, actions = {
+                IconButton(onClick = { navController.navigate(Screen.CartItem.route) }) {
+                    Box(modifier = Modifier.size(24.dp)) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_back_ios),
-                            contentDescription = "Go Back"
+                            imageVector = Icons.Outlined.ShoppingCart,
+                            contentDescription = "Shopping Cart"
                         )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Screen.CartItem.route) }) {
-                        Box(modifier = Modifier.size(24.dp)) {
-                            Icon(
-                                imageVector = Icons.Outlined.ShoppingCart,
-                                contentDescription = "Shopping Cart"
+                        if (productsInCart.isNotEmpty()) {
+                            Badge(
+                                modifier = Modifier.align(Alignment.TopEnd),
+                                containerColor = Color.Red,
                             )
-                            if (productsInCart.isNotEmpty()) {
-                                Badge(
-                                    modifier = Modifier.align(Alignment.TopEnd),
-                                    containerColor = Color.Red,
-                                )
-                            }
                         }
                     }
                 }
-            )
+            })
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValue ->
@@ -111,19 +106,14 @@ fun OffersScreen(
                 .consumeWindowInsets(paddingValue)
                 .padding(paddingValue)
         ) {
-            items(
-                items = featuredProducts.orEmpty(),
+            items(items = featuredProducts.orEmpty(),
                 key = { item -> item.id },
                 contentType = { item -> item.id }) { product ->
-                ProductOfferItem(
-                    product = product,
-                    onProductClicked = {
-                        navController.navigate(Screen.ProductDetail.route + "/${it.id}")
-                    },
-                    onFavoriteClicked = {
-                        storeViewModel.toggleFavoriteStatus(product.id)
-                    }
-                )
+                ProductOfferItem(product = product, onProductClicked = {
+                    navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+                }, onFavoriteClicked = {
+                    storeViewModel.toggleFavoriteStatus(product.id)
+                })
             }
         }
     }
@@ -131,9 +121,7 @@ fun OffersScreen(
 
 @Composable
 fun ProductOfferItem(
-    product: Product,
-    onProductClicked: (Product) -> Unit,
-    onFavoriteClicked: (Product) -> Unit
+    product: Product, onProductClicked: (Product) -> Unit, onFavoriteClicked: (Product) -> Unit
 ) {
     var isFavorited by rememberSaveable { mutableStateOf(product.isFavorited) }
     val url by rememberSaveable { mutableStateOf(product.images[0]) }
@@ -152,9 +140,11 @@ fun ProductOfferItem(
                 modifier = Modifier.weight(0.7f)
             ) {
                 SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(url)
-                        .crossfade(true)
-                        .build(),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .diskCacheKey(url)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .crossfade(true).build(),
                     loading = {
                         CircularProgressIndicator(
                             modifier = Modifier.requiredSize(50.dp),
@@ -182,8 +172,7 @@ fun ProductOfferItem(
                         onClick = {
                             isFavorited = !isFavorited
                             onFavoriteClicked.invoke(product.copy(isFavorited = isFavorited))
-                        },
-                        modifier = Modifier.size(24.dp)
+                        }, modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = if (isFavorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,

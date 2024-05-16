@@ -102,6 +102,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.br.b2b.data.dummy.NavigationDrawerData
 import com.br.b2b.domain.model.CartItem
@@ -125,6 +126,7 @@ import com.br.b2b.util.VoiceToTextParser
 import com.br.b2b.util.applyCpfMask
 import com.br.jetpacktest.R
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
@@ -529,8 +531,14 @@ private fun HomeContent(
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 SubcomposeAsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(categories?.get(index)?.image)
+                                        .diskCacheKey(categories?.get(index)?.image)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
+                                        .dispatcher(Dispatchers.IO)
+                                        .crossfade(true)
+                                        .build(),
                                     modifier = Modifier.fillMaxSize(),
-                                    model = categories?.get(index)?.image,
                                     alignment = Alignment.Center,
                                     contentScale = ContentScale.FillBounds,
                                     loading = {
@@ -737,7 +745,12 @@ fun ProductItem(
                 modifier = Modifier.weight(1f)
             ) {
                 SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .dispatcher(Dispatchers.IO)
+                        .diskCacheKey(url)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .data(url)
+                        .crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator(
@@ -826,7 +839,12 @@ fun ProductItemFilter(
         Column(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.weight(1f)) {
                 SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .dispatcher(Dispatchers.IO)
+                        .diskCacheKey(url)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .crossfade(true)
                         .build(),
                     loading = {
                         CircularProgressIndicator(
