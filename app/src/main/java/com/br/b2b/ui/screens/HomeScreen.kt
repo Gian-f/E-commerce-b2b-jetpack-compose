@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -466,7 +467,9 @@ private fun HomeContent(
                 Column {
                     ProductGrid(
                         query = query,
-                        modifier = Modifier.padding(contentPadding),
+                        modifier = Modifier
+                            .consumeWindowInsets(contentPadding)
+                            .padding(contentPadding),
                         filteredProducts = filteredProducts,
                         navController = navController,
                         storeViewModel = storeViewModel
@@ -476,6 +479,7 @@ private fun HomeContent(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .consumeWindowInsets(contentPadding)
                         .padding(contentPadding)
                 ) {
                     item(

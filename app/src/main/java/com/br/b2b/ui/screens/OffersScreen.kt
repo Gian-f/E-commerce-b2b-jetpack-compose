@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -107,6 +108,7 @@ fun OffersScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .consumeWindowInsets(paddingValue)
                 .padding(paddingValue)
         ) {
             items(

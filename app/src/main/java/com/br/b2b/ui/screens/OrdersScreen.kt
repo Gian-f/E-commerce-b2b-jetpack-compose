@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,26 +50,29 @@ fun OrdersScreen(navController: NavController) {
     val items = OrderData.items
     val chipStates = remember { mutableStateOf(ChipState()) }
 
-    Scaffold(topBar = {
-        CenterAlignedTopAppBar(title = {
-            Text(
-                Screen.Orders.title, maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-        }, navigationIcon = {
-            IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-                    contentDescription = "Comeback"
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(title = {
+                Text(
+                    Screen.Orders.title, maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
+            }, navigationIcon = {
+                IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
+                        contentDescription = "Comeback"
+                    )
+                }
+            })
+        },
+        content = { innerPadding ->
+            Column(Modifier.consumeWindowInsets(innerPadding).padding(innerPadding)) {
+                FilterChips(chipStates)
+                val filteredItems = filterItemsByStatus(items, chipStates)
+                OrderList(filteredItems)
             }
-        })
-    }, content = { innerPadding ->
-        Column(Modifier.padding(innerPadding)) {
-            FilterChips(chipStates)
-            val filteredItems = filterItemsByStatus(items, chipStates)
-            OrderList(filteredItems)
         }
-    })
+    )
 }
 
 @Composable

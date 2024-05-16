@@ -6,10 +6,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -130,29 +134,40 @@ fun ProductDetailScreen(
             )
         },
         content = { innerPadding ->
-            ProductDetailContent(product, Modifier.padding(innerPadding))
+            ProductDetailContent(
+                product,
+                Modifier
+                    .consumeWindowInsets(innerPadding)
+                    .padding(innerPadding)
+            )
         },
         bottomBar = {
-            if (quantity == 0) {
-                AddToCartButton(
-                    onClick = {
-                        quantity++
-                        product?.let {
-                            storeViewModel.addProductToCart(it)
+            Box(
+                modifier = Modifier
+                    .consumeWindowInsets(WindowInsets.systemBars)
+                    .padding(WindowInsets.systemBars.asPaddingValues())
+            ) {
+                if (quantity == 0) {
+                    AddToCartButton(
+                        onClick = {
+                            quantity++
+                            product?.let {
+                                storeViewModel.addProductToCart(it)
+                            }
                         }
-                    }
-                )
-            } else {
-                QuantitySelector(
-                    cartItemViewModel = cartItemViewModel,
-                    product = product,
-                    quantity = quantity,
-                    onNavigate = { onNavigate.invoke() }
-                ) { newQuantity ->
-                    quantity = newQuantity
-                    if (newQuantity == 0) {
-                        product?.let {
-                            storeViewModel.removeProductFromCart(it.id)
+                    )
+                } else {
+                    QuantitySelector(
+                        cartItemViewModel = cartItemViewModel,
+                        product = product,
+                        quantity = quantity,
+                        onNavigate = { onNavigate.invoke() }
+                    ) { newQuantity ->
+                        quantity = newQuantity
+                        if (newQuantity == 0) {
+                            product?.let {
+                                storeViewModel.removeProductFromCart(it.id)
+                            }
                         }
                     }
                 }

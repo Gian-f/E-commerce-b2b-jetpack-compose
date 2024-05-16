@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -105,6 +109,7 @@ fun CartScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .consumeWindowInsets(it)
                         .padding(it)
                 ) {
                     Text(
@@ -118,6 +123,7 @@ fun CartScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .consumeWindowInsets(it)
                         .padding(it),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -141,44 +147,50 @@ fun CartScreen(
             Spacer(modifier = Modifier.height(16.dp))
         },
         bottomBar = {
-            HorizontalDivider(color = Color.LightGray)
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .consumeWindowInsets(WindowInsets.systemBars)
+                    .padding(WindowInsets.systemBars.asPaddingValues())
             ) {
-                Column {
-                    Text(
-                        text = "Valor total:",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp
-                    )
-                    Text(text = FormatCurrency(total))
-                }
-                Button(
-                    modifier = Modifier.width(150.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    onClick = {
+                HorizontalDivider(color = Color.LightGray)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = "Valor total:",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp
+                        )
+                        Text(text = FormatCurrency(total))
+                    }
+                    Button(
+                        modifier = Modifier.width(150.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        onClick = {
 
-                    }) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Finalizar", fontSize = 12.sp)
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .background(Color.White, CircleShape)
+                        }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "$cartItemsQuantity",
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
+                            Text("Finalizar", fontSize = 12.sp)
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .background(Color.White, CircleShape)
+                            ) {
+                                Text(
+                                    text = "$cartItemsQuantity",
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
                         }
                     }
                 }
