@@ -63,6 +63,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.br.b2b.domain.model.CartItem
+import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.viewmodel.CartItemViewModel
 import com.br.b2b.util.FormatCurrency
@@ -90,7 +91,13 @@ fun CartScreen(
                 title = { Text(text = "Meu Carrinho") },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = {
+                            navController.popBackStack(
+                                Screen.Products.route,
+                                inclusive = false,
+                            )
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
                             contentDescription = "Voltar"

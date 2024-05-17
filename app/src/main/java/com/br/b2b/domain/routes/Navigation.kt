@@ -71,7 +71,10 @@ fun Navigation() {
                     navController.navigate(Screen.CartItem.route)
                 },
                 onBackPress = {
-                    navController.popBackStack()
+                    navController.popBackStack(
+                        Screen.Products.route,
+                        inclusive = false,
+                    )
                 }
             )
         }

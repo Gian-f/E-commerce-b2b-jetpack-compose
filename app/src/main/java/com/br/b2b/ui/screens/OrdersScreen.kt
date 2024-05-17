@@ -52,11 +52,13 @@ fun OrdersScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = {
+            CenterAlignedTopAppBar(
+                title = {
                 Text(
                     Screen.Orders.title, maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
-            }, navigationIcon = {
+            },
+                navigationIcon = {
                 IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
@@ -66,7 +68,10 @@ fun OrdersScreen(navController: NavController) {
             })
         },
         content = { innerPadding ->
-            Column(Modifier.consumeWindowInsets(innerPadding).padding(innerPadding)) {
+            Column(
+                Modifier
+                    .consumeWindowInsets(innerPadding)
+                    .padding(innerPadding)) {
                 FilterChips(chipStates)
                 val filteredItems = filterItemsByStatus(items, chipStates)
                 OrderList(filteredItems)
@@ -86,9 +91,7 @@ fun FilterChips(chipStates: MutableState<ChipState>) {
     ) {
         Spacer(modifier = Modifier.width(4.dp))
         ElevatedFilterChip(label = "Pendentes",
-            selected = remember {
-                mutableStateOf(chipStates.value.inProgress)
-            },
+            selected = chipStates.value.inProgress,
             onSelected = {
                 chipStates.value =
                     chipStates.value.copy(
@@ -99,9 +102,7 @@ fun FilterChips(chipStates: MutableState<ChipState>) {
             }
         )
         ElevatedFilterChip(label = "Entregues",
-            selected = remember {
-                mutableStateOf(chipStates.value.delivered)
-            },
+            selected = chipStates.value.delivered,
             onSelected = {
                 chipStates.value =
                     chipStates.value.copy(
@@ -112,9 +113,7 @@ fun FilterChips(chipStates: MutableState<ChipState>) {
             }
         )
         ElevatedFilterChip(label = "Cancelados",
-            selected = remember {
-                mutableStateOf(chipStates.value.cancelled)
-            },
+            selected = chipStates.value.cancelled,
             onSelected = {
                 chipStates.value =
                     chipStates.value.copy(

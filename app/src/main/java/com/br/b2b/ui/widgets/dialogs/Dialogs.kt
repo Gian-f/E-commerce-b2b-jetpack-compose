@@ -1,11 +1,13 @@
 package com.br.b2b.ui.widgets.dialogs
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -17,6 +19,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -27,6 +30,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.br.jetpacktest.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,6 +131,48 @@ fun ConfirmDialog(
                     Text(cancelButtonText)
                 }
             }
+        )
+    }
+}
+
+
+@Composable
+fun LoadingDialog(
+    message: String = "Carregando. Por favor, aguarde...",
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                LoadingAnimation()
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = message,
+                    fontSize = TextUnit(22f, TextUnitType.Sp),
+                    lineHeight = TextUnit(30f, TextUnitType.Sp),
+                )
+            }
+        },
+        confirmButton = {},
+    )
+}
+
+@Composable
+fun LoadingAnimation() {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            modifier = Modifier.size(300.dp),
+            iterations = LottieConstants.IterateForever
         )
     }
 }

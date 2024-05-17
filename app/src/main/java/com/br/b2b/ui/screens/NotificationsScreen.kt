@@ -51,7 +51,14 @@ fun NotificationsScreen(navController: NavHostController) {
                     Text(Screen.Notifications.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = {
+                        navController.popBackStack(
+                            Screen.Products.route,
+                            inclusive = false,
+                        )
+                    }
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back_ios),
                             contentDescription = "Go back"

@@ -82,19 +82,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun ElevatedFilterChip(
     label: String,
-    selected: MutableState<Boolean>,
+    selected: Boolean,
     onSelected: () -> Unit,
 ) {
     ElevatedFilterChip(
-        selected = selected.value,
+        selected = selected,
         onClick = {
-            if (!selected.value) {
+            if (!selected) {
                 onSelected()
             }
         },
         label = { Text(label) },
         shape = CircleShape,
-        leadingIcon = if (selected.value) {
+        leadingIcon = if (selected) {
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
@@ -355,23 +355,9 @@ fun SegmentedButton(
 @Composable
 fun CategoriesButton(
     name: String,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    var selected by remember { mutableStateOf(false) }
-
-    val updatedOnClick by rememberUpdatedState(onClick)
-
-    @Composable
-    fun LeadingIcon() {
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.Done,
-                contentDescription = "Done icon",
-                modifier = Modifier.size(FilterChipDefaults.IconSize)
-            )
-        }
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -379,15 +365,18 @@ fun CategoriesButton(
         horizontalArrangement = Arrangement.Center
     ) {
         FilterChip(
-            onClick = {
-                updatedOnClick()
-                selected = !selected
-            },
+            onClick = onClick,
             label = {
                 Text(name)
             },
-            selected = selected,
-            leadingIcon = { LeadingIcon() }
+            selected = isSelected,
+            leadingIcon = {
+                if (isSelected) Icon(
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                )
+            }
         )
     }
 }

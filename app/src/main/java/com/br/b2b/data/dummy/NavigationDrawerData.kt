@@ -41,8 +41,8 @@ object NavigationDrawerData {
             unselectedIcon = Icons.Outlined.LocalOffer,
         ),
         NavigationDrawerItem(
-            title = Screen.News.title,
-            route = Screen.News.route,
+            title = Screen.Notifications.title,
+            route = Screen.Notifications.route,
             selectedIcon = Icons.Filled.Newspaper,
             unselectedIcon = Icons.Outlined.Newspaper,
             badgeCount = 10

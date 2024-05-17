@@ -9,6 +9,7 @@ import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.repository.CartItemRepository
 import com.br.b2b.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,9 @@ class StoreViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow("")
     val errorMessage: StateFlow<String> = _errorMessage
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
 
@@ -63,22 +67,31 @@ class StoreViewModel @Inject constructor(
     }
 
     fun findProducts(term: String) {
+        _isLoading.value = true
         viewModelScope.launch {
             runCatching {
                 repository.findProducts(term)
             }.onSuccess {
                 _filteredProducts.value = it.getOrThrow().filterNotNull()
+                delay(2000)
+                _isLoading.value = false
             }.onFailure {
                 _errorMessage.value = it.message.orEmpty()
+                delay(2000)
+                _isLoading.value = false
             }
         }
     }
 
     fun toggleSearchBar() {
         if (_active.value) {
-            _filteredProducts.value = emptyList()
+            clearFilteredProducts()
         }
         _active.value = !_active.value
+    }
+
+    fun clearFilteredProducts() {
+        _filteredProducts.value = emptyList()
     }
 
     fun saveSearchHistory(query: String) {
@@ -158,15 +171,18 @@ class StoreViewModel @Inject constructor(
     }
 
     fun fetchProducts() {
+        _isLoading.value = true
         viewModelScope.launch {
             val result = repository.fetchAllProducts()
             if (result.isSuccess) {
                 _products.value = result.getOrNull()
                 result.getOrNull()?.let { repository.createProducts(it) }
+                _isLoading.value = false
             } else {
                 _errorMessage.value =
                     "Erro ao buscar os produtos: ${result.exceptionOrNull()?.localizedMessage}"
                 _products.value = null
+                _isLoading.value = false
             }
         }
     }
