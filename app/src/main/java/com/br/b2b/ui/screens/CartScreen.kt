@@ -1,5 +1,6 @@
 package com.br.b2b.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
@@ -38,8 +41,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,170 +69,213 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.br.b2b.domain.model.CartItem
+import com.br.b2b.domain.model.Order
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.ConfirmDialog
 import com.br.b2b.ui.viewmodel.CartItemViewModel
+import com.br.b2b.ui.viewmodel.UserViewModel
+import com.br.b2b.ui.widgets.dialogs.OrderAnimation
 import com.br.b2b.util.FormatCurrency
+import com.br.b2b.util.formattedDate
+import com.br.jetpacktest.R
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import java.util.Date
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     navController: NavController,
+    userViewModel: UserViewModel,
     cartViewModel: CartItemViewModel
 ) {
+    val context = LocalContext.current
     val openDialog = remember { mutableStateOf(false) }
     val total by cartViewModel.total.collectAsStateWithLifecycle()
+    val user by userViewModel.users.collectAsStateWithLifecycle()
     val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
     val cartItemsQuantity by cartViewModel.quantity.collectAsStateWithLifecycle()
+    val isOrderCreated = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         cartViewModel.getAllItemsFromCart()
         cartViewModel.calculateQuantity()
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(text = "Meu Carrinho") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack(
-                                Screen.Products.route,
-                                inclusive = false,
-                            )
-                        }
-                    ) {
+    DisposableEffect(Unit) {
+        onDispose {
+            isOrderCreated.value = false
+        }
+    }
+
+    if (isOrderCreated.value) {
+        val order = Order(
+            requestedAt = formattedDate(Date()),
+            status = "Pendente",
+            items = cartItems,
+            trackingNumber = UUID.randomUUID().toString(),
+            total = total.toString(),
+            userId = user[0].id,
+        )
+        cartViewModel.createOrder(
+            order = order,
+            onComplete = {
+                cartViewModel.clearCart(
+                    onComplete = {
+                        Toast.makeText(context, "Pedido realizado com sucesso!", Toast.LENGTH_LONG).show()
+                        navController.popBackStack(
+                            route = Screen.Products.route,
+                            inclusive = false,
+                            saveState = false
+                        )
+                    }
+                )
+            }
+        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(ScaffoldDefaults.contentWindowInsets.asPaddingValues())
+        ) {
+            OrderAnimation()
+            Text(text = "Pedido realizado com sucesso!")
+        }
+    } else {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(title = { Text(text = "Meu Carrinho") }, navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack(
+                            Screen.Products.route,
+                            inclusive = false,
+                        )
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
                             contentDescription = "Voltar"
                         )
                     }
-                },
-                actions = {
+                }, actions = {
                     IconButton(
+                        enabled = cartItems.isNotEmpty(),
                         onClick = { openDialog.value = true }) {
                         Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Voltar"
+                            imageVector = Icons.Outlined.Delete, contentDescription = "Voltar"
                         )
                     }
+                })
+            },
+            content = {
+                if (cartItems.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .consumeWindowInsets(it)
+                            .padding(it)
+                    ) {
+                        Text(
+                            text = "Nenhum produto foi encontrado.",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(horizontal = 4.dp)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .consumeWindowInsets(it)
+                            .padding(it),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        items(items = cartItems, key = { cartItem ->
+                            cartItem.id
+                        }, contentType = { cartItem ->
+                            cartItem.id
+                        }) { cartItem ->
+                            CartItemRow(
+                                cartViewModel = cartViewModel,
+                                item = cartItem,
+                            )
+                        }
+                    }
                 }
-            )
-        },
-        content = {
-            if (cartItems.isEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+            },
+            bottomBar = {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .consumeWindowInsets(it)
-                        .padding(it)
+                        .consumeWindowInsets(WindowInsets.systemBars)
+                        .padding(WindowInsets.systemBars.asPaddingValues())
                 ) {
-                    Text(
-                        text = "Nenhum produto foi encontrado.",
+                    HorizontalDivider(color = Color.LightGray)
+                    Row(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(horizontal = 4.dp)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .consumeWindowInsets(it)
-                        .padding(it),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(
-                        items = cartItems,
-                        key = { cartItem ->
-                            cartItem.id
-                        },
-                        contentType = { cartItem ->
-                            cartItem.id
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "Valor total:",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            )
+                            Text(text = FormatCurrency(total))
                         }
-                    ) { cartItem ->
-                        CartItemRow(
-                            cartViewModel = cartViewModel,
-                            item = cartItem,
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .consumeWindowInsets(WindowInsets.systemBars)
-                    .padding(WindowInsets.systemBars.asPaddingValues())
-            ) {
-                HorizontalDivider(color = Color.LightGray)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = "Valor total:",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 18.sp
-                        )
-                        Text(text = FormatCurrency(total))
-                    }
-                    Button(
-                        modifier = Modifier.width(150.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        onClick = {
-
-                        }) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Finalizar", fontSize = 12.sp)
-                            Box(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .background(Color.White, CircleShape)
+                        Button(enabled = cartItems.isNotEmpty(),
+                            modifier = Modifier.width(150.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            onClick = {
+                                isOrderCreated.value = true
+                            }) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(
-                                    text = "$cartItemsQuantity",
-                                    fontSize = 10.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                                Text("Finalizar", fontSize = 12.sp)
+                                Box(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .background(Color.White, CircleShape)
+                                ) {
+                                    Text(
+                                        text = "$cartItemsQuantity",
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(
+                                            horizontal = 8.dp,
+                                            vertical = 4.dp
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
-    )
+            })
+    }
 
     ConfirmDialog(
-        onConfirm = {
-            cartViewModel.clearCart(
-                onComplete = {
-                    cartViewModel.getAllItemsFromCart()
-                }
-            )
-        },
         dialogState = openDialog,
-        message = "Você deseja remover todos os itens do seu carrinho?"
+        message = "Você deseja remover todos os itens do seu carrinho?",
+        onConfirm = {
+            cartViewModel.clearCart(onComplete = {
+                cartViewModel.getAllItemsFromCart()
+            })
+        }
     )
 }
 
 
 @Composable
 fun CartItemRow(
-    cartViewModel: CartItemViewModel,
-    item: CartItem
+    cartViewModel: CartItemViewModel, item: CartItem
 ) {
     var quantity by remember { mutableIntStateOf(item.quantity) }
 
@@ -247,12 +296,9 @@ fun CartItemRow(
         ) {
             SubcomposeAsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(item.productImages[0])
-                    .dispatcher(Dispatchers.IO)
-                    .diskCacheKey(item.productImages[0])
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .build(),
+                model = ImageRequest.Builder(LocalContext.current).data(item.productImages[0])
+                    .dispatcher(Dispatchers.IO).diskCacheKey(item.productImages[0])
+                    .diskCachePolicy(CachePolicy.ENABLED).build(),
                 alignment = Alignment.Center,
                 contentScale = ContentScale.FillBounds,
                 loading = {
@@ -283,12 +329,9 @@ fun CartItemRow(
             ) { newQuantity ->
                 quantity = newQuantity
                 if (newQuantity == 0) {
-                    cartViewModel.removeFromCart(
-                        item.productId,
-                        onComplete = {
-                            cartViewModel.getAllItemsFromCart()
-                        }
-                    )
+                    cartViewModel.removeFromCart(item.productId, onComplete = {
+                        cartViewModel.getAllItemsFromCart()
+                    })
                 }
             }
         }
@@ -315,20 +358,17 @@ fun QuantitySelector(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            IconButton(
-                onClick = {
-                    onQuantityChange(quantity - 1)
-                    cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity - 1)
-                }
-            ) {
+            IconButton(onClick = {
+                onQuantityChange(quantity - 1)
+                cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity - 1)
+            }) {
                 Icon(
                     Icons.Filled.Remove,
                     contentDescription = "Diminuir quantidade",
@@ -336,25 +376,21 @@ fun QuantitySelector(
                 )
             }
             Text(
-                text = quantity.toString(),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                text = quantity.toString(), fontSize = 12.sp, fontWeight = FontWeight.Bold
             )
-            IconButton(
-                onClick = {
-                    onQuantityChange(quantity + 1)
-                    cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity + 1)
-                }
-            ) {
+            IconButton(onClick = {
+                onQuantityChange(quantity + 1)
+                cartItemViewModel.updateCartItemQuantity(cartItem.productId, quantity + 1)
+            }) {
                 Icon(
-                    Icons.Filled.Add, contentDescription = "Aumentar quantidade",
+                    Icons.Filled.Add,
+                    contentDescription = "Aumentar quantidade",
                     modifier = Modifier.size(20.dp)
                 )
             }
         }
         Text(
-            text = formattedTotalPrice,
-            fontWeight = FontWeight.Bold
+            text = formattedTotalPrice, fontWeight = FontWeight.Bold
         )
     }
 }

@@ -26,6 +26,9 @@ interface CategoryDao {
     @Delete
     suspend fun deleteCategory(category: Category)
 
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories()
+
     @Query("SELECT * FROM categories WHERE id LIKE :id LIMIT 1")
     suspend fun findById(id: Int): Category
 }

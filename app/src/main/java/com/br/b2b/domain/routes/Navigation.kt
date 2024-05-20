@@ -80,10 +80,10 @@ fun Navigation() {
         }
 
         composable(Screen.Orders.route) {
-            OrdersScreen(navController)
+            OrdersScreen(navController, cartItemViewModel)
         }
         composable(Screen.CartItem.route) {
-            CartScreen(navController, cartItemViewModel)
+            CartScreen(navController, userViewModel, cartItemViewModel)
         }
         composable(Screen.Notifications.route) {
             NotificationsScreen(navController)

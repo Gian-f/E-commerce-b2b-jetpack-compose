@@ -25,7 +25,7 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE id LIKE :id")
     suspend fun findById(id: Int): Product
 
-    @Query("SELECT p.*, c.name AS categoryDescription FROM products p JOIN categories c ON p.categoryId = c.id WHERE p.title LIKE :term OR p.description LIKE :term OR p.price LIKE :term OR c.name LIKE :term")
+    @Query("SELECT p.*, c.name AS category_description FROM products p JOIN categories c ON p.categoryId = c.id WHERE p.title LIKE :term OR p.description LIKE :term OR c.name LIKE :term")
     suspend fun findProducts(term: String): List<Product>
 
     @Query("SELECT * FROM products WHERE categoryId = :categoryId")
@@ -42,4 +42,7 @@ interface ProductDao {
 
     @Delete
     suspend fun deleteProduct(product: Product)
+
+    @Query("DELETE FROM products")
+    suspend fun deleteAllProducts()
 }

@@ -9,6 +9,8 @@ import com.br.b2b.domain.model.Product
 import com.br.b2b.domain.repository.CartItemRepository
 import com.br.b2b.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -243,6 +245,13 @@ class StoreViewModel @Inject constructor(
                     "Erro ao buscar produtos na categoria: ${result.exceptionOrNull()?.localizedMessage}"
                 _products.value = null
             }
+        }
+    }
+
+    fun deleteAllProductsAndCategories() {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.deleteAllProducts()
+            repository.deleteAllCategories()
         }
     }
 }

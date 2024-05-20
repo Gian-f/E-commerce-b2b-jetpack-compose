@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,45 +39,60 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.br.b2b.data.dummy.OrderData
 import com.br.b2b.domain.model.ChipState
 import com.br.b2b.domain.model.Order
 import com.br.b2b.domain.routes.Screen
 import com.br.b2b.ui.components.ElevatedFilterChip
+import com.br.b2b.ui.viewmodel.CartItemViewModel
+import com.br.b2b.util.FormatCurrency
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrdersScreen(navController: NavController) {
-    val items = OrderData.items
+fun OrdersScreen(navController: NavController, cartItemViewModel: CartItemViewModel) {
+    val items by cartItemViewModel.orders.collectAsStateWithLifecycle()
     val chipStates = remember { mutableStateOf(ChipState()) }
+
+    LaunchedEffect(Unit) {
+        cartItemViewModel.getAllOrders()
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                Text(
-                    Screen.Orders.title, maxLines = 1, overflow = TextOverflow.Ellipsis
-                )
-            },
-                navigationIcon = {
-                IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-                        contentDescription = "Comeback"
+                    Text(
+                        Screen.Orders.title, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
-                }
-            })
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate(Screen.Products.route) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
+                            contentDescription = "Comeback"
+                        )
+                    }
+                })
         },
         content = { innerPadding ->
             Column(
-                Modifier
+                horizontalAlignment = if (items.isNullOrEmpty()) Alignment.CenterHorizontally else Alignment.Start,
+                verticalArrangement = if (items.isNullOrEmpty()) Arrangement.Center else Arrangement.Top,
+                modifier = Modifier
+                    .fillMaxSize()
                     .consumeWindowInsets(innerPadding)
-                    .padding(innerPadding)) {
-                FilterChips(chipStates)
-                val filteredItems = filterItemsByStatus(items, chipStates)
-                OrderList(filteredItems)
+                    .padding(innerPadding)
+            ) {
+                if (items.isNullOrEmpty()) {
+                    Text(text = "Nenhum pedido foi encontrado...")
+                } else {
+                    FilterChips(chipStates)
+                    val filteredItems = filterItemsByStatus(items ?: emptyList(), chipStates)
+                    OrderList(filteredItems)
+                }
             }
         }
     )
@@ -141,7 +159,11 @@ fun filterItemsByStatus(items: List<Order>, chipStates: MutableState<ChipState>)
 @Composable
 fun OrderList(items: List<Order>) {
     LazyColumn {
-        items(items) { item ->
+        items(
+            items = items,
+            key = { it.id },
+            contentType = { it.id }
+        ) { item ->
             OrderCard(item)
         }
     }
@@ -166,7 +188,7 @@ fun OrderCard(item: Order) {
                 horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Pedido #${item.orderId}",
+                    text = "Pedido #${item.id}",
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start
@@ -187,7 +209,7 @@ fun OrderCard(item: Order) {
                 )
 
                 Text(
-                    text = item.trackingNumber,
+                    text = item.trackingNumber.substring(0, 6),
                     color = Color.Black,
                     modifier = Modifier.padding(end = 12.dp)
                 )
@@ -203,7 +225,7 @@ fun OrderCard(item: Order) {
                 )
 
                 Text(
-                    text = item.total,
+                    text = FormatCurrency(item.total.toDouble()),
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.padding(end = 12.dp)

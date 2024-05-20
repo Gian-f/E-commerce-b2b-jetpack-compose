@@ -12,6 +12,7 @@ import androidx.room.Room
 import com.br.b2b.data.local.AppDatabase
 import com.br.b2b.data.local.dao.CartItemDao
 import com.br.b2b.data.local.dao.CategoryDao
+import com.br.b2b.data.local.dao.OrderDao
 import com.br.b2b.data.local.dao.ProductDao
 import com.br.b2b.data.local.dao.UserDao
 import com.br.b2b.data.local.datastore.DataStoreManager
@@ -55,16 +56,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSignUpViewModel(
-        authRepository: AuthRepositoryImpl,
-        userViewModel: UserViewModel
+        authRepository: AuthRepositoryImpl, userViewModel: UserViewModel
     ): SignUpViewModel {
         return SignUpViewModel(authRepository, userViewModel)
     }
 
     @Provides
     @Singleton
-    fun provideUserViewModel(userRepository: UserRepositoryImpl): UserViewModel {
-        return UserViewModel(userRepository)
+    fun provideUserViewModel(
+        userRepository: UserRepositoryImpl, dataStoreManager: DataStoreManager
+    ): UserViewModel {
+        return UserViewModel(userRepository, dataStoreManager)
     }
 
     @Provides
@@ -105,9 +107,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCartItemRepository(
-        dao: CartItemDao
+        dao: CartItemDao, order: OrderDao
     ): CartItemRepository {
-        return CartItemRepositoryImpl(dao)
+        return CartItemRepositoryImpl(dao,order)
     }
 
     @Provides
@@ -123,26 +125,21 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
-        return PreferenceDataStoreFactory.create(
-            corruptionHandler = ReplaceFileCorruptionHandler(
-                produceNewData = { emptyPreferences() }
-            ),
+        return PreferenceDataStoreFactory.create(corruptionHandler = ReplaceFileCorruptionHandler(
+            produceNewData = { emptyPreferences() }),
             migrations = listOf(
                 SharedPreferencesMigration(
-                    appContext,
-                    PreferencesKeys.SEARCH_HISTORY.name
+                    appContext, PreferencesKeys.SEARCH_HISTORY.name
                 )
             ),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-            produceFile = { appContext.preferencesDataStoreFile(PreferencesKeys.SEARCH_HISTORY.name) }
-        )
+            produceFile = { appContext.preferencesDataStoreFile(PreferencesKeys.SEARCH_HISTORY.name) })
     }
 
     @Provides
     fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
         return Room.databaseBuilder(
-            appContext,
-            AppDatabase::class.java, "b2bDatabase.db"
+            appContext, AppDatabase::class.java, "b2bDatabase.db"
         ).fallbackToDestructiveMigration().build()
     }
 
@@ -154,6 +151,11 @@ object AppModule {
     @Provides
     fun provideUserDao(database: AppDatabase): UserDao {
         return database.userDao()
+    }
+
+    @Provides
+    fun provideOrderDao(database: AppDatabase): OrderDao {
+        return database.orderDao()
     }
 
     @Provides

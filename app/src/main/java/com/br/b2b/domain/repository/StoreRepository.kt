@@ -15,4 +15,6 @@ interface StoreRepository {
     suspend fun createCategories(categories: List<Category>): Result<Unit>
     suspend fun getProductsInCategory(categoryId: Int): Result<List<Product>>
     suspend fun toggleFavoriteStatus(productId: Int): Result<Unit>
+    suspend fun deleteAllProducts(): Result<Unit>
+    suspend fun deleteAllCategories(): Result<Unit>
 }

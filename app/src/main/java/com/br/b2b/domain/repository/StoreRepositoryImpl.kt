@@ -101,4 +101,16 @@ class StoreRepositoryImpl
             productDao.updateFavoriteStatus(productId, !product.isFavorited)
         }
     }
+
+    override suspend fun deleteAllCategories(): Result<Unit> {
+        return runCatching {
+            categoryDao.deleteAllCategories()
+        }
+    }
+
+    override suspend fun deleteAllProducts(): Result<Unit> {
+        return runCatching {
+            productDao.deleteAllProducts()
+        }
+    }
 }

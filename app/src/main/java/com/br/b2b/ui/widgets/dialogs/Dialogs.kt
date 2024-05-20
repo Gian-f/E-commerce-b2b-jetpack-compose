@@ -176,3 +176,19 @@ fun LoadingAnimation() {
         )
     }
 }
+
+@Composable
+fun OrderAnimation() {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.order))
+
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            modifier = Modifier.size(300.dp),
+            iterations = LottieConstants.IterateForever
+        )
+    }
+}

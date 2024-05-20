@@ -3,10 +3,12 @@ package com.br.b2b.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.br.b2b.domain.model.CartItem
+import com.br.b2b.domain.model.Order
 import com.br.b2b.domain.repository.CartItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,6 +24,9 @@ class CartItemViewModel @Inject constructor(
 
     private val _foundedCartItem = MutableStateFlow<CartItem?>(null)
     val foundedCartItem: StateFlow<CartItem?> = _foundedCartItem
+
+    private val _orders = MutableStateFlow<List<Order>?>(null)
+    val orders: StateFlow<List<Order>?> = _orders
 
     private val _total = MutableStateFlow(0.0)
     val total: StateFlow<Double> = _total
@@ -98,6 +103,14 @@ class CartItemViewModel @Inject constructor(
         }
     }
 
+    fun createOrder(order: Order, onComplete: () -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.insertOrder(order)
+            delay(2000)
+            onComplete.invoke()
+        }
+    }
+
     fun updateCartItemQuantity(productId: Int, newQuantity: Int) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastUpdateTime > 500) { // Tempo de debounce de 500 milissegundos
@@ -116,6 +129,18 @@ class CartItemViewModel @Inject constructor(
             calculateTotal()
             calculateQuantity()
             onComplete.invoke()
+        }
+    }
+
+    fun getAllOrders() {
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.getAllOrders()
+                .onSuccess {
+                    _orders.value = it
+                }.onFailure {
+                    _orders.value = null
+                    println(it.localizedMessage)
+                }
         }
     }
 }

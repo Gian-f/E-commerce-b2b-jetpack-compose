@@ -9,42 +9,48 @@ import java.util.UUID
 object OrderData {
     val items = listOf(
         Order(
-            orderId = 1555,
+            id = 1555,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Entregue",
             total = FormatCurrency(1500.00),
             trackingNumber = UUID.randomUUID().toString().substring(0, 7)
         ),
         Order(
-            orderId = 2123,
+            id = 2123,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Pendente",
             total = FormatCurrency(1500.00),
             trackingNumber = UUID.randomUUID().toString().substring(0, 7)
         ),
         Order(
-            orderId = 1235,
+            id = 2123,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Pendente",
             total = FormatCurrency(1500.00),
             trackingNumber = UUID.randomUUID().toString().substring(0, 7)
         ),
         Order(
-            orderId = 1514,
+            id = 1514,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Pendente",
             total = FormatCurrency(1500.00),
             trackingNumber = UUID.randomUUID().toString().substring(0, 7)
         ),
         Order(
-            orderId = 1235,
+            id = 1235,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Cancelado",
             total = FormatCurrency(1500.00),
             trackingNumber = UUID.randomUUID().toString().substring(0, 7)
         ),
         Order(
-            orderId = 5556,
+            id = 5556,
+            userId = 1.toString(),
             requestedAt = formattedDate(Date()),
             status = "Entregue",
             total = FormatCurrency(2000.00),

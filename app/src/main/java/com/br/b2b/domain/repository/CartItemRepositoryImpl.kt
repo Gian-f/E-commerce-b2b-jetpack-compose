@@ -1,12 +1,14 @@
 package com.br.b2b.domain.repository
 
 import com.br.b2b.data.local.dao.CartItemDao
+import com.br.b2b.data.local.dao.OrderDao
 import com.br.b2b.domain.model.CartItem
-import kotlinx.coroutines.flow.Flow
+import com.br.b2b.domain.model.Order
 import javax.inject.Inject
 
 class CartItemRepositoryImpl @Inject constructor(
-    private val cartItemDao: CartItemDao
+    private val cartItemDao: CartItemDao,
+    private val orderDao: OrderDao
 ) : CartItemRepository {
 
     override suspend fun addToCart(cartItem: CartItem) {
@@ -64,5 +66,19 @@ class CartItemRepositoryImpl @Inject constructor(
 
     override suspend fun clearCart() {
         cartItemDao.clearCart()
+    }
+
+    override suspend fun insertOrder(order: Order): Result<Unit> {
+        return runCatching {
+            orderDao.insertAll(order)
+        }.onFailure {
+            print(it.message)
+        }
+    }
+
+    override suspend fun getAllOrders(): Result<List<Order>> {
+        return runCatching {
+            orderDao.getAllOrders()
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.br.b2b.domain.repository
 
 import com.br.b2b.domain.model.CartItem
+import com.br.b2b.domain.model.Order
 
 interface CartItemRepository {
     suspend fun addToCart(cartItem: CartItem)
@@ -17,4 +18,6 @@ interface CartItemRepository {
     suspend fun calculateTotal(): Double
     suspend fun calculateQuantity(): Int
     suspend fun clearCart()
+    suspend fun insertOrder(order: Order): Result<Unit>
+    suspend fun getAllOrders(): Result<List<Order>>
 }

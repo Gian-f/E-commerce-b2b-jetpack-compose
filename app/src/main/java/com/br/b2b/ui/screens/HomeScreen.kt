@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -206,8 +205,12 @@ fun HomeScreen(
             dialogState = openDialog,
             message = "Tem certeza que deseja sair?",
             onConfirm = {
-                userViewModel.deleteAllUsers()
-                navController.navigate(Screen.Login.route)
+                storeViewModel.deleteAllProductsAndCategories()
+                userViewModel.logout(
+                    onSignOut = {
+                        navController.navigate(Screen.Login.route)
+                    }
+                )
             },
         )
     }
@@ -438,7 +441,8 @@ private fun HomeContent(
                                                 voiceState.spokenText = ""
                                             }
                                             storeViewModel.toggleSearchBar()
-                                        })
+                                        }
+                                )
                             }
                         }
                     },
@@ -633,28 +637,28 @@ private fun HomeContent(
                         }
 
 
-                        item(
-                            key = Section.EletronicsProducts.id,
-                            contentType = Section.EletronicsProducts.contentType
-                        ) {
-                            SectionTitle(
-                                title = "Eletrônicos para você!",
-                                modifier = Modifier.padding(16.dp)
-                            )
-                            LazyRow(
-                                contentPadding = PaddingValues(end = 64.dp),
-                            ) {
-                                items(items = eletronicsProducts.orEmpty(),
-                                    key = { item -> item.id },
-                                    contentType = { item -> item.id }) { product ->
-                                    ProductItem(product = product, onProductClicked = {
-                                        navController.navigate(Screen.ProductDetail.route + "/${it.id}")
-                                    }, onFavoriteClicked = {
-                                        storeViewModel.toggleFavoriteStatus(product.id)
-                                    })
-                                }
-                            }
-                        }
+//                        item(
+//                            key = Section.EletronicsProducts.id,
+//                            contentType = Section.EletronicsProducts.contentType
+//                        ) {
+//                            SectionTitle(
+//                                title = "Eletrônicos para você!",
+//                                modifier = Modifier.padding(16.dp)
+//                            )
+//                            LazyRow(
+//                                contentPadding = PaddingValues(end = 64.dp),
+//                            ) {
+//                                items(items = eletronicsProducts.orEmpty(),
+//                                    key = { item -> item.id },
+//                                    contentType = { item -> item.id }) { product ->
+//                                    ProductItem(product = product, onProductClicked = {
+//                                        navController.navigate(Screen.ProductDetail.route + "/${it.id}")
+//                                    }, onFavoriteClicked = {
+//                                        storeViewModel.toggleFavoriteStatus(product.id)
+//                                    })
+//                                }
+//                            }
+//                        }
                     }
                 }
             }
@@ -920,7 +924,7 @@ fun ProductGrid(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(text = "Exibindo resultados para: ", fontSize = 16.sp)
-            Text(text = query, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Text(text = query, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2), modifier = Modifier.fillMaxWidth()

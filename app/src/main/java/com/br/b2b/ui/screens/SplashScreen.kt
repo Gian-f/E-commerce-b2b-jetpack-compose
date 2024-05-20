@@ -46,12 +46,11 @@ fun SplashScreen(
     loginViewModel: LoginViewModel,
 ) {
     val context = LocalContext.current as Activity
-    val splashKey = remember { UUID.randomUUID().toString() }
     val isLoginVisible = remember { mutableStateOf(false) }
     val token by loginViewModel.token.collectAsStateWithLifecycle()
     context.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-    LaunchedEffect(splashKey) {
+    LaunchedEffect(Unit) {
         isLoginVisible.value = true
         delay(2000)
         if (token.isNullOrEmpty()) {
